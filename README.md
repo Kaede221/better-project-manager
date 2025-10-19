@@ -61,10 +61,6 @@
 
 运行 `npm run compile` 编译 TypeScript 代码。
 
-### 测试
-
-运行 `npm test` 执行测试。
-
 ## 贡献
 
 欢迎提交 Issue 和 Pull Request。
