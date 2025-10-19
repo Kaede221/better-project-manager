@@ -70,6 +70,14 @@
         "command": "project-manager.editConfig",
         "title": "编辑配置文件",
         "icon": "$(edit)"
+      },
+      {
+        "command": "project-manager.moveProjectToFolder",
+        "title": "移动到文件夹"
+      },
+      {
+        "command": "project-manager.removeFromFolder",
+        "title": "从文件夹移除"
       }
     ],
     "menus": {
@@ -104,6 +112,16 @@
         {
           "command": "project-manager.changeIcon",
           "when": "view == numberListView && viewItem == projectItem",
+          "group": "navigation@2"
+        },
+        {
+          "command": "project-manager.moveProjectToFolder",
+          "when": "view == numberListView && viewItem == projectItem",
+          "group": "navigation@2"
+        },
+        {
+          "command": "project-manager.removeFromFolder",
+          "when": "view == numberListView && viewItem == projectItem && projectFolder",
           "group": "navigation@2"
         },
         {
