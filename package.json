@@ -1,0 +1,105 @@
+{
+  "name": "project-manager",
+  "displayName": "project-manager",
+  "description": "",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.105.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "projectManagerSidebar",
+          "title": "项目管理器",
+          "icon": "resources/sidebar-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "projectManagerSidebar": [
+        {
+          "id": "numberListView",
+          "name": "项目列表"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "project-manager.openProject",
+        "title": "打开项目"
+      },
+      {
+        "command": "project-manager.renameProject",
+        "title": "重命名项目"
+      },
+      {
+        "command": "project-manager.addProject",
+        "title": "添加项目"
+      },
+      {
+        "command": "project-manager.showNumberSidebar",
+        "title": "显示数字侧边栏"
+      },
+      {
+        "command": "project-manager.deleteProject",
+        "title": "删除项目"
+      },
+      {
+        "command": "project-manager.changeIcon",
+        "title": "修改项目图标"
+      }
+    ],
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "project-manager.renameProject",
+          "when": "view == numberListView && viewItem == projectItem",
+          "group": "navigation"
+        },
+        {
+          "command": "project-manager.deleteProject",
+          "when": "view == numberListView && viewItem == projectItem",
+          "group": "navigation"
+        },
+        {
+          "command": "project-manager.changeIcon",
+          "when": "view == numberListView && viewItem == projectItem",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "pnpm run package",
+    "compile": "pnpm run check-types && pnpm run lint && node esbuild.js",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "package": "pnpm run check-types && pnpm run lint && node esbuild.js --production",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.105.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.x",
+    "@typescript-eslint/eslint-plugin": "^8.42.0",
+    "@typescript-eslint/parser": "^8.42.0",
+    "eslint": "^9.34.0",
+    "esbuild": "^0.25.9",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^5.9.2",
+    "@vscode/test-cli": "^0.0.11",
+    "@vscode/test-electron": "^2.5.2"
+  }
+}
