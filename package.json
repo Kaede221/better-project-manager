@@ -26,7 +26,13 @@
         {
           "id": "numberListView",
           "name": "项目列表",
-          "icon": "./resources/project-icon.svg"
+          "icon": "./resources/project-icon.svg",
+          "actionButtons": [
+            {
+              "command": "project-manager.addProject",
+              "icon": "$(add)"
+            }
+          ]
         }
       ]
     },
@@ -41,11 +47,8 @@
       },
       {
         "command": "project-manager.addProject",
-        "title": "添加项目"
-      },
-      {
-        "command": "project-manager.showNumberSidebar",
-        "title": "显示数字侧边栏"
+        "title": "添加项目",
+        "icon": "$(add)"
       },
       {
         "command": "project-manager.deleteProject",
@@ -57,6 +60,13 @@
       }
     ],
     "menus": {
+      "view/title": [
+        {
+          "command": "project-manager.addProject",
+          "when": "view == numberListView",
+          "group": "navigation"
+        }
+      ],
       "view/item/context": [
         {
           "command": "project-manager.renameProject",

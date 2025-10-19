@@ -6,7 +6,7 @@ import * as path from "path";
 interface ProjectItem {
   name: string;
   path: string;
-  icon: string;
+  icon?: string; // 修改为可选字段
 }
 
 let CONFIG_FILE: string;
@@ -40,24 +40,33 @@ class ProjectTreeProvider implements vscode.TreeDataProvider<ProjectItem> {
   constructor(private context: vscode.ExtensionContext) {}
 
   getTreeItem(element: ProjectItem): vscode.TreeItem {
-    const iconPath = path.join(
+    const fs = require("fs");
+    // 默认 icon 路径
+    const defaultIconPath = path.join(
       vscode.extensions.getExtension(this.context.extension.id)!.extensionPath,
       "resources",
-      element.icon
+      "icon-default-project.svg"
     );
-    // 修改为全局目录
-    const globalIconPath = path.join(
-      CONFIG_FILE ? path.dirname(CONFIG_FILE) : "",
-      element.icon
-    );
+
+    // 项目自定义 icon 路径（全局目录）
+    const globalIconPath = element.icon
+      ? path.join(CONFIG_FILE ? path.dirname(CONFIG_FILE) : "", element.icon)
+      : "";
+
+    // 判断自定义 icon 是否存在
+    const iconPathToUse =
+      element.icon && fs.existsSync(globalIconPath)
+        ? globalIconPath
+        : defaultIconPath;
+
     const treeItem = new vscode.TreeItem(
       element.name,
       vscode.TreeItemCollapsibleState.None
     );
     treeItem.description = element.path;
     treeItem.iconPath = {
-      light: vscode.Uri.file(globalIconPath),
-      dark: vscode.Uri.file(globalIconPath),
+      light: vscode.Uri.file(iconPathToUse),
+      dark: vscode.Uri.file(iconPathToUse),
     };
     treeItem.command = {
       command: "project-manager.openProject",
@@ -140,33 +149,41 @@ export function activate(context: vscode.ExtensionContext) {
         return;
       }
 
-      const iconUri = await vscode.window.showOpenDialog({
-        canSelectFiles: true,
-        canSelectFolders: false,
-        canSelectMany: false,
-        filters: { SVG: ["svg"] },
-        openLabel: "选择项目图标（SVG）",
+      // 询问是否设置图标
+      const setIcon = await vscode.window.showQuickPick(["是", "否"], {
+        placeHolder: "是否设置项目图标？",
+        canPickMany: false,
       });
-      if (!iconUri || iconUri.length === 0) {
-        return;
-      }
 
-      // 将SVG图标复制到全局目录
-      const fs = require("fs");
-      const iconSrc = iconUri[0].fsPath;
-      const iconName = path.basename(iconSrc);
-      const globalDir = path.dirname(CONFIG_FILE);
-      const iconDest = path.join(globalDir, iconName);
-      if (!fs.existsSync(globalDir)) {
-        fs.mkdirSync(globalDir, { recursive: true });
+      let iconName = "";
+
+      if (setIcon === "是") {
+        const iconUri = await vscode.window.showOpenDialog({
+          canSelectFiles: true,
+          canSelectFolders: false,
+          canSelectMany: false,
+          filters: { SVG: ["svg"] },
+          openLabel: "选择项目图标 (SVG)",
+        });
+        if (iconUri && iconUri.length > 0) {
+          // 将SVG图标复制到全局目录
+          const fs = require("fs");
+          const iconSrc = iconUri[0].fsPath;
+          iconName = path.basename(iconSrc);
+          const globalDir = path.dirname(CONFIG_FILE);
+          const iconDest = path.join(globalDir, iconName);
+          if (!fs.existsSync(globalDir)) {
+            fs.mkdirSync(globalDir, { recursive: true });
+          }
+          fs.copyFileSync(iconSrc, iconDest);
+        }
       }
-      fs.copyFileSync(iconSrc, iconDest);
 
       const projects = loadProjects();
       projects.push({
         name: name.trim(),
         path: folderUri[0].fsPath,
-        icon: iconName,
+        icon: iconName || undefined, // 如果没有图标就设置为undefined
       });
       saveProjects(projects);
       provider.refresh();
@@ -207,7 +224,7 @@ export function activate(context: vscode.ExtensionContext) {
           canSelectFolders: false,
           canSelectMany: false,
           filters: { SVG: ["svg"] },
-          openLabel: "选择新的项目图标（SVG）",
+          openLabel: "选择新的项目图标 (SVG)",
         });
         if (!iconUri || iconUri.length === 0) {
           return;
