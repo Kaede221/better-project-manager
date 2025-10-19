@@ -2,6 +2,11 @@
   "name": "better-project-manager",
   "displayName": "Better Project Manager",
   "description": "一个用于管理项目的VSCode扩展",
+  "publisher": "kaedeshimizu",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Kaede221/better-project-manager.git"
+  },
   "author": {
     "name": "Kaede Shimizu",
     "email": "kaedeshimizu@qq.com"
