@@ -1,0 +1,199 @@
+import * as vscode from "vscode";
+import * as path from "path";
+import * as fs from "fs";
+import { saveProjects, loadProjects } from "../utils/common";
+import { IconManager } from "../utils/iconManager";
+
+/**
+ * 命令处理器
+ */
+export class CommandHandlers {
+  private iconManager: IconManager;
+
+  constructor(
+    private context: vscode.ExtensionContext,
+    private configFile: string,
+    private treeProvider: vscode.TreeDataProvider<ProjectItem>
+  ) {
+    this.iconManager = new IconManager(context);
+  }
+
+  /**
+   * 打开项目命令处理器
+   */
+  async handleOpenProject(item: ProjectItem): Promise<void> {
+    const uri = vscode.Uri.file(item.path);
+    await vscode.commands.executeCommand("vscode.openFolder", uri, true);
+  }
+
+  /**
+   * 重命名项目命令处理器
+   */
+  async handleRenameProject(item: ProjectItem): Promise<void> {
+    const projects = loadProjects(this.configFile);
+    const idx = projects.findIndex((p) => p.path === item.path);
+    if (idx === -1) {
+      return;
+    }
+
+    const newName = await vscode.window.showInputBox({
+      prompt: "输入新的项目名称",
+      value: item.name,
+    });
+
+    if (newName && newName.trim() && newName !== item.name) {
+      projects[idx].name = newName.trim();
+      saveProjects(projects, this.configFile);
+      this.refreshTree();
+    }
+  }
+
+  /**
+   * 添加项目命令处理器
+   */
+  async handleAddProject(): Promise<void> {
+    const name = await vscode.window.showInputBox({
+      prompt: "输入项目名称",
+    });
+
+    if (!name || !name.trim()) {
+      return;
+    }
+
+    const folderUri = await vscode.window.showOpenDialog({
+      canSelectFolders: true,
+      canSelectFiles: false,
+      canSelectMany: false,
+      openLabel: "选择项目文件夹",
+    });
+
+    if (!folderUri || folderUri.length === 0) {
+      return;
+    }
+
+    // 询问是否设置图标
+    const setIcon = await vscode.window.showQuickPick(["是", "否"], {
+      placeHolder: "是否设置项目图标？",
+      canPickMany: false,
+    });
+
+    let iconName = "";
+
+    if (setIcon === "是") {
+      const iconUri = await vscode.window.showOpenDialog({
+        canSelectFiles: true,
+        canSelectFolders: false,
+        canSelectMany: false,
+        filters: { SVG: ["svg"] },
+        openLabel: "选择项目图标 (SVG)",
+      });
+
+      if (iconUri && iconUri.length > 0) {
+        iconName = this.iconManager.copyIconToGlobal(
+          iconUri[0].fsPath,
+          this.configFile
+        );
+      }
+    }
+
+    const projects = loadProjects(this.configFile);
+    projects.push({
+      name: name.trim(),
+      path: folderUri[0].fsPath,
+      icon: iconName || undefined,
+    });
+
+    saveProjects(projects, this.configFile);
+    this.refreshTree();
+  }
+
+  /**
+   * 删除项目命令处理器
+   */
+  async handleDeleteProject(item: ProjectItem): Promise<void> {
+    const projects = loadProjects(this.configFile);
+    const idx = projects.findIndex((p) => p.path === item.path);
+    if (idx === -1) {
+      return;
+    }
+
+    const confirm = await vscode.window.showWarningMessage(
+      `确定要删除项目 "${item.name}" 吗？`,
+      { modal: true },
+      "删除"
+    );
+
+    if (confirm === "删除") {
+      projects.splice(idx, 1);
+      saveProjects(projects, this.configFile);
+      this.refreshTree();
+    }
+  }
+
+  /**
+   * 修改项目图标命令处理器
+   */
+  async handleChangeIcon(item: ProjectItem): Promise<void> {
+    const iconUri = await vscode.window.showOpenDialog({
+      canSelectFiles: true,
+      canSelectFolders: false,
+      canSelectMany: false,
+      filters: { SVG: ["svg"] },
+      openLabel: "选择新的项目图标 (SVG)",
+    });
+
+    if (!iconUri || iconUri.length === 0) {
+      return;
+    }
+
+    const iconName = this.iconManager.copyIconToGlobal(
+      iconUri[0].fsPath,
+      this.configFile
+    );
+    const projects = loadProjects(this.configFile);
+    const idx = projects.findIndex((p) => p.path === item.path);
+
+    if (idx === -1) {
+      return;
+    }
+
+    projects[idx].icon = iconName;
+    saveProjects(projects, this.configFile);
+    this.refreshTree();
+  }
+
+  /**
+   * 编辑配置文件命令处理器
+   */
+  async handleEditConfig(): Promise<void> {
+    try {
+      // 确保配置文件存在
+      if (!fs.existsSync(this.configFile)) {
+        const dir = path.dirname(this.configFile);
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir, { recursive: true });
+        }
+        fs.writeFileSync(this.configFile, "[]", "utf8");
+      }
+
+      // 打开配置文件进行编辑
+      const configUri = vscode.Uri.file(this.configFile);
+      await vscode.window.showTextDocument(configUri);
+
+      vscode.window.showInformationMessage(
+        "配置文件已打开，编辑完成后保存即可生效"
+      );
+    } catch (error) {
+      vscode.window.showErrorMessage(`打开配置文件失败: ${error}`);
+    }
+  }
+
+  /**
+   * 刷新树视图
+   */
+  private refreshTree(): void {
+    if (this.treeProvider && "refresh" in this.treeProvider) {
+      (this.treeProvider as any).refresh();
+    }
+  }
+}

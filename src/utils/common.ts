@@ -1,31 +1,35 @@
 import * as path from "path";
+import * as fs from "fs";
 
 /**
  * 保存项目列表到配置文件
  * @param projects 项目列表
- * @param CONFIG_FILE 配置文件路径
+ * @param configFile 配置文件路径
  */
-export const saveProjects = (projects: ProjectItem[], CONFIG_FILE: string) => {
-  const fs = require("fs");
-  const dir = path.dirname(CONFIG_FILE);
+export const saveProjects = (
+  projects: ProjectItem[],
+  configFile: string
+): void => {
+  const dir = path.dirname(configFile);
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
-  fs.writeFileSync(CONFIG_FILE, JSON.stringify(projects, null, 2), "utf8");
+  fs.writeFileSync(configFile, JSON.stringify(projects, null, 2), "utf8");
 };
 
 /**
  * 从配置文件加载项目列表
- * @param CONFIG_FILE 配置文件路径
+ * @param configFile 配置文件路径
  * @returns 项目列表
  */
-export const loadProjects = (CONFIG_FILE: string): ProjectItem[] => {
+export const loadProjects = (configFile: string): ProjectItem[] => {
   try {
-    const fs = require("fs");
-    if (fs.existsSync(CONFIG_FILE)) {
-      const raw = fs.readFileSync(CONFIG_FILE, "utf8");
+    if (fs.existsSync(configFile)) {
+      const raw = fs.readFileSync(configFile, "utf8");
       return JSON.parse(raw);
     }
-  } catch (e) {}
+  } catch (e) {
+    console.error("加载项目列表失败:", e);
+  }
   return [];
 };
