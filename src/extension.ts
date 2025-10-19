@@ -248,6 +248,68 @@ export function activate(context: vscode.ExtensionContext) {
       }
     )
   );
+
+  // 注册编辑配置文件命令
+  context.subscriptions.push(
+    vscode.commands.registerCommand("project-manager.editConfig", async () => {
+      try {
+        // 确保配置文件存在
+        const fs = require("fs");
+        if (!fs.existsSync(CONFIG_FILE)) {
+          // 如果配置文件不存在，创建一个空的
+          const dir = path.dirname(CONFIG_FILE);
+          if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+          }
+          fs.writeFileSync(CONFIG_FILE, "[]", "utf8");
+        }
+
+        // 打开配置文件进行编辑
+        const configUri = vscode.Uri.file(CONFIG_FILE);
+        await vscode.window.showTextDocument(configUri);
+
+        vscode.window.showInformationMessage(
+          "配置文件已打开，编辑完成后保存即可生效"
+        );
+      } catch (error) {
+        vscode.window.showErrorMessage(`打开配置文件失败: ${error}`);
+      }
+    })
+  );
+
+  // 添加文件系统监视器，监听配置文件变化
+  try {
+    const fs = require("fs");
+    const configDir = path.dirname(CONFIG_FILE);
+
+    // 确保配置目录存在
+    if (!fs.existsSync(configDir)) {
+      fs.mkdirSync(configDir, { recursive: true });
+    }
+
+    // 创建文件系统监视器
+    const watcher = vscode.workspace.createFileSystemWatcher(
+      new vscode.RelativePattern(configDir, "project-manager.json")
+    );
+
+    // 监听文件变化事件
+    watcher.onDidChange(() => {
+      provider.refresh();
+    });
+
+    watcher.onDidCreate(() => {
+      provider.refresh();
+    });
+
+    watcher.onDidDelete(() => {
+      provider.refresh();
+    });
+
+    // 将监视器添加到订阅中，确保扩展停用时正确清理
+    context.subscriptions.push(watcher);
+  } catch (error) {
+    console.error("创建文件监视器失败:", error);
+  }
 }
 
 export function deactivate() {}

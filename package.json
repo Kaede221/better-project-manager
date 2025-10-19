@@ -57,12 +57,22 @@
       {
         "command": "project-manager.changeIcon",
         "title": "修改项目图标"
+      },
+      {
+        "command": "project-manager.editConfig",
+        "title": "编辑配置文件",
+        "icon": "$(edit)"
       }
     ],
     "menus": {
       "view/title": [
         {
           "command": "project-manager.addProject",
+          "when": "view == numberListView",
+          "group": "navigation"
+        },
+        {
+          "command": "project-manager.editConfig",
           "when": "view == numberListView",
           "group": "navigation"
         }
