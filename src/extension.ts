@@ -51,6 +51,14 @@ function registerCommands(
       handler: handlers.handleOpenProject.bind(handlers),
     },
     {
+      command: "project-manager.openProjectInCurrentWindow",
+      handler: handlers.handleOpenProjectInCurrentWindow.bind(handlers),
+    },
+    {
+      command: "project-manager.openProjectInNewWindow",
+      handler: handlers.handleOpenProjectInNewWindow.bind(handlers),
+    },
+    {
       command: "project-manager.renameProject",
       handler: handlers.handleRenameProject.bind(handlers),
     },

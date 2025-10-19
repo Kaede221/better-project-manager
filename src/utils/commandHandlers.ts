@@ -27,6 +27,22 @@ export class CommandHandlers {
   }
 
   /**
+   * 在当前窗口打开项目命令处理器
+   */
+  async handleOpenProjectInCurrentWindow(item: ProjectItem): Promise<void> {
+    const uri = vscode.Uri.file(item.path);
+    await vscode.commands.executeCommand("vscode.openFolder", uri, false);
+  }
+
+  /**
+   * 在新窗口打开项目命令处理器
+   */
+  async handleOpenProjectInNewWindow(item: ProjectItem): Promise<void> {
+    const uri = vscode.Uri.file(item.path);
+    await vscode.commands.executeCommand("vscode.openFolder", uri, true);
+  }
+
+  /**
    * 重命名项目命令处理器
    */
   async handleRenameProject(item: ProjectItem): Promise<void> {
