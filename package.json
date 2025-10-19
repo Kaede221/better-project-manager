@@ -71,17 +71,17 @@
         {
           "command": "project-manager.renameProject",
           "when": "view == numberListView && viewItem == projectItem",
-          "group": "navigation"
-        },
-        {
-          "command": "project-manager.deleteProject",
-          "when": "view == numberListView && viewItem == projectItem",
-          "group": "navigation"
+          "group": "navigation@1"
         },
         {
           "command": "project-manager.changeIcon",
           "when": "view == numberListView && viewItem == projectItem",
-          "group": "navigation"
+          "group": "navigation@2"
+        },
+        {
+          "command": "project-manager.deleteProject",
+          "when": "view == numberListView && viewItem == projectItem",
+          "group": "navigation@3"
         }
       ]
     }

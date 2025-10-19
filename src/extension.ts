@@ -1,12 +1,10 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 import * as path from "path";
 
 interface ProjectItem {
   name: string;
   path: string;
-  icon?: string; // 修改为可选字段
+  icon?: string;
 }
 
 let CONFIG_FILE: string;
