@@ -17,7 +17,7 @@
         {
           "id": "projectManagerSidebar",
           "title": "项目管理器",
-          "icon": "resources/sidebar-icon.svg"
+          "icon": "./resources/project-icon.svg"
         }
       ]
     },
@@ -25,7 +25,8 @@
       "projectManagerSidebar": [
         {
           "id": "numberListView",
-          "name": "项目列表"
+          "name": "项目列表",
+          "icon": "./resources/project-icon.svg"
         }
       ]
     },
