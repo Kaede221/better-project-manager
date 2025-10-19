@@ -78,6 +78,18 @@ function registerCommands(
       command: "project-manager.editConfig",
       handler: handlers.handleEditConfig.bind(handlers),
     },
+    {
+      command: "project-manager.moveProjectToFolder",
+      handler: handlers.handleMoveProjectToFolder.bind(handlers),
+    },
+    {
+      command: "project-manager.renameFolder",
+      handler: handlers.handleRenameFolder.bind(handlers),
+    },
+    {
+      command: "project-manager.deleteFolder",
+      handler: handlers.handleDeleteFolder.bind(handlers),
+    },
   ];
 
   commands.forEach(({ command, handler }) => {

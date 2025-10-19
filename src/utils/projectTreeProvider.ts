@@ -1,15 +1,13 @@
 import * as vscode from "vscode";
-import { IconManager } from "../utils/iconManager";
-import { loadProjects } from "../utils/common";
+import { IconManager } from "./iconManager";
+import { loadProjects } from "./common";
 
 /**
  * 项目树提供器
  */
-export class ProjectTreeProvider
-  implements vscode.TreeDataProvider<ProjectItem>
-{
+export class ProjectTreeProvider implements vscode.TreeDataProvider<TreeItem> {
   private _onDidChangeTreeData = new vscode.EventEmitter<
-    ProjectItem | undefined
+    TreeItem | undefined
   >();
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
@@ -22,18 +20,30 @@ export class ProjectTreeProvider
     this.iconManager = new IconManager(context);
   }
 
-  getTreeItem(element: ProjectItem): vscode.TreeItem {
+  getTreeItem(element: TreeItem): vscode.TreeItem {
+    // 处理文件夹项
+    if ("type" in element && element.type === "folder") {
+      const treeItem = new vscode.TreeItem(
+        element.name,
+        vscode.TreeItemCollapsibleState.Collapsed
+      );
+      treeItem.contextValue = "folderItem";
+      return treeItem;
+    }
+
+    // 处理项目项
+    const project = element as ProjectItem;
     const iconPath = this.iconManager.getProjectIconPath(
-      element,
+      project,
       this.configFile
     );
 
     const treeItem = new vscode.TreeItem(
-      element.name,
+      project.name,
       vscode.TreeItemCollapsibleState.None
     );
 
-    treeItem.description = element.path;
+    treeItem.description = project.path;
     treeItem.iconPath = {
       light: vscode.Uri.file(iconPath),
       dark: vscode.Uri.file(iconPath),
@@ -41,16 +51,53 @@ export class ProjectTreeProvider
     treeItem.command = {
       command: "project-manager.openProject",
       title: "打开项目",
-      arguments: [element],
+      arguments: [project],
     };
     treeItem.contextValue = "projectItem";
 
     return treeItem;
   }
 
-  getChildren(): Thenable<ProjectItem[]> {
+  getChildren(element?: TreeItem): Thenable<TreeItem[]> {
+    if (element && "type" in element && element.type === "folder") {
+      // 返回文件夹内的项目
+      return Promise.resolve(element.projects);
+    }
+
+    // 返回顶级项目和文件夹
     const projects = loadProjects(this.configFile);
-    return Promise.resolve(projects.length ? projects : []);
+
+    // 按文件夹分组项目
+    const folderMap = new Map<string, ProjectItem[]>();
+    const rootProjects: ProjectItem[] = [];
+
+    projects.forEach((project) => {
+      if (project.folder) {
+        if (!folderMap.has(project.folder)) {
+          folderMap.set(project.folder, []);
+        }
+        folderMap.get(project.folder)?.push(project);
+      } else {
+        rootProjects.push(project);
+      }
+    });
+
+    // 创建文件夹项
+    const folders: FolderItem[] = [];
+    folderMap.forEach((folderProjects, folderName) => {
+      folders.push({
+        name: folderName,
+        type: "folder",
+        projects: folderProjects,
+      });
+    });
+
+    // 按名称排序
+    folders.sort((a, b) => a.name.localeCompare(b.name));
+    rootProjects.sort((a, b) => a.name.localeCompare(b.name));
+
+    // 合并文件夹和根项目
+    return Promise.resolve([...folders, ...rootProjects]);
   }
 
   refresh(): void {

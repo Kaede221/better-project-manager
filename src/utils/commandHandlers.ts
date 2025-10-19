@@ -13,7 +13,7 @@ export class CommandHandlers {
   constructor(
     private context: vscode.ExtensionContext,
     private configFile: string,
-    private treeProvider: vscode.TreeDataProvider<ProjectItem>
+    private treeProvider: vscode.TreeDataProvider<TreeItem>
   ) {
     this.iconManager = new IconManager(context);
   }
@@ -64,9 +64,6 @@ export class CommandHandlers {
     }
   }
 
-  /**
-   * 添加项目命令处理器
-   */
   async handleAddProject(): Promise<void> {
     const name = await vscode.window.showInputBox({
       prompt: "输入项目名称",
@@ -85,6 +82,19 @@ export class CommandHandlers {
 
     if (!folderUri || folderUri.length === 0) {
       return;
+    }
+
+    // 询问是否添加到文件夹
+    const addToFolder = await vscode.window.showQuickPick(["是", "否"], {
+      placeHolder: "是否将项目添加到文件夹？",
+      canPickMany: false,
+    });
+
+    let folderName = undefined;
+    if (addToFolder === "是") {
+      folderName = await vscode.window.showInputBox({
+        prompt: "输入文件夹名称",
+      });
     }
 
     // 询问是否设置图标
@@ -117,10 +127,102 @@ export class CommandHandlers {
       name: name.trim(),
       path: folderUri[0].fsPath,
       icon: iconName || undefined,
+      folder: folderName || undefined,
     });
 
     saveProjects(projects, this.configFile);
     this.refreshTree();
+  }
+
+  /**
+   * 移动项目到文件夹命令处理器
+   */
+  async handleMoveProjectToFolder(item: ProjectItem): Promise<void> {
+    // 获取现有文件夹列表
+    const projects = loadProjects(this.configFile);
+    const folderSet = new Set<string>();
+
+    projects.forEach((project) => {
+      if (project.folder) {
+        folderSet.add(project.folder);
+      }
+    });
+
+    const folders = Array.from(folderSet);
+    const options = ["新建文件夹", ...folders, "根目录"];
+
+    const choice = await vscode.window.showQuickPick(options, {
+      placeHolder: "选择要移动到的文件夹",
+      canPickMany: false,
+    });
+
+    let folderName: string | undefined = undefined;
+
+    if (choice === "新建文件夹") {
+      folderName = await vscode.window.showInputBox({
+        prompt: "输入新文件夹名称",
+      });
+    } else if (choice !== "根目录") {
+      folderName = choice;
+    }
+
+    if (folderName !== undefined || choice === "根目录") {
+      const idx = projects.findIndex((p) => p.path === item.path);
+      if (idx !== -1) {
+        projects[idx].folder = folderName;
+        saveProjects(projects, this.configFile);
+        this.refreshTree();
+      }
+    }
+  }
+
+  /**
+   * 重命名文件夹命令处理器
+   */
+  async handleRenameFolder(item: FolderItem): Promise<void> {
+    const newName = await vscode.window.showInputBox({
+      prompt: "输入新的文件夹名称",
+      value: item.name,
+    });
+
+    if (newName && newName.trim() && newName !== item.name) {
+      const projects = loadProjects(this.configFile);
+
+      // 更新所有在该文件夹中的项目
+      projects.forEach((project) => {
+        if (project.folder === item.name) {
+          project.folder = newName.trim();
+        }
+      });
+
+      saveProjects(projects, this.configFile);
+      this.refreshTree();
+    }
+  }
+
+  /**
+   * 删除文件夹命令处理器
+   */
+  async handleDeleteFolder(item: FolderItem): Promise<void> {
+    const confirm = await vscode.window.showWarningMessage(
+      `确定要删除文件夹 "${item.name}" 吗？文件夹中的项目将移动到根目录。`,
+      { modal: true },
+      "删除"
+    );
+
+    if (confirm === "删除") {
+      const projects = loadProjects(this.configFile);
+
+      // 移除所有项目的文件夹属性
+      projects.forEach((project) => {
+        if (project.folder === item.name) {
+          delete project.folder;
+        }
+      });
+
+      saveProjects(projects, this.configFile);
+      this.refreshTree();
+    }
   }
 
   /**
