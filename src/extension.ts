@@ -1,33 +1,10 @@
 import * as vscode from "vscode";
 import * as path from "path";
 
-interface ProjectItem {
-  name: string;
-  path: string;
-  icon?: string;
-}
+import { saveProjects, loadProjects } from "./utils/common";
 
-let CONFIG_FILE: string;
-
-function loadProjects(): ProjectItem[] {
-  try {
-    const fs = require("fs");
-    if (fs.existsSync(CONFIG_FILE)) {
-      const raw = fs.readFileSync(CONFIG_FILE, "utf8");
-      return JSON.parse(raw);
-    }
-  } catch (e) {}
-  return [];
-}
-
-function saveProjects(projects: ProjectItem[]) {
-  const fs = require("fs");
-  const dir = path.dirname(CONFIG_FILE);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-  fs.writeFileSync(CONFIG_FILE, JSON.stringify(projects, null, 2), "utf8");
-}
+// 记录配置文件信息
+let CONFIG_FILE: string = "";
 
 class ProjectTreeProvider implements vscode.TreeDataProvider<ProjectItem> {
   private _onDidChangeTreeData = new vscode.EventEmitter<
@@ -76,7 +53,7 @@ class ProjectTreeProvider implements vscode.TreeDataProvider<ProjectItem> {
   }
 
   getChildren(): Thenable<ProjectItem[]> {
-    const projects = loadProjects();
+    const projects = loadProjects(CONFIG_FILE);
     return Promise.resolve(projects.length ? projects : []);
   }
 
@@ -95,6 +72,7 @@ export function activate(context: vscode.ExtensionContext) {
   const provider = new ProjectTreeProvider(context);
   vscode.window.registerTreeDataProvider("numberListView", provider);
 
+  // 打开项目命令
   context.subscriptions.push(
     vscode.commands.registerCommand(
       "project-manager.openProject",
@@ -105,11 +83,12 @@ export function activate(context: vscode.ExtensionContext) {
     )
   );
 
+  // 重命名项目命令
   context.subscriptions.push(
     vscode.commands.registerCommand(
       "project-manager.renameProject",
       async (item: ProjectItem) => {
-        const projects = loadProjects();
+        const projects = loadProjects(CONFIG_FILE);
         const idx = projects.findIndex((p) => p.path === item.path);
         if (idx === -1) {
           return;
@@ -120,7 +99,7 @@ export function activate(context: vscode.ExtensionContext) {
         });
         if (newName && newName.trim() && newName !== item.name) {
           projects[idx].name = newName.trim();
-          saveProjects(projects);
+          saveProjects(projects, CONFIG_FILE);
           provider.refresh();
         }
       }
@@ -177,13 +156,13 @@ export function activate(context: vscode.ExtensionContext) {
         }
       }
 
-      const projects = loadProjects();
+      const projects = loadProjects(CONFIG_FILE);
       projects.push({
         name: name.trim(),
         path: folderUri[0].fsPath,
         icon: iconName || undefined, // 如果没有图标就设置为undefined
       });
-      saveProjects(projects);
+      saveProjects(projects, CONFIG_FILE);
       provider.refresh();
     })
   );
@@ -193,7 +172,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       "project-manager.deleteProject",
       async (item: ProjectItem) => {
-        const projects = loadProjects();
+        const projects = loadProjects(CONFIG_FILE);
         const idx = projects.findIndex((p) => p.path === item.path);
         if (idx === -1) {
           return;
@@ -205,7 +184,7 @@ export function activate(context: vscode.ExtensionContext) {
         );
         if (confirm === "删除") {
           projects.splice(idx, 1);
-          saveProjects(projects);
+          saveProjects(projects, CONFIG_FILE);
           provider.refresh();
         }
       }
@@ -237,13 +216,13 @@ export function activate(context: vscode.ExtensionContext) {
         }
         fs.copyFileSync(iconSrc, iconDest);
 
-        const projects = loadProjects();
+        const projects = loadProjects(CONFIG_FILE);
         const idx = projects.findIndex((p) => p.path === item.path);
         if (idx === -1) {
           return;
         }
         projects[idx].icon = iconName;
-        saveProjects(projects);
+        saveProjects(projects, CONFIG_FILE);
         provider.refresh();
       }
     )
