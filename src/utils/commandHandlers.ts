@@ -70,9 +70,10 @@ export class CommandHandlers {
    */
   async handleOpenProjectInNewWindow(item: ProjectItem): Promise<void> {
     if (this.isProjectAlreadyOpen(item.path)) {
-      vscode.window.showInformationMessage(
-        `已经打开项目：${item.name}，将在新窗口再次打开`
+      vscode.window.showWarningMessage(
+        `已经打开项目：${item.name}，由于VSCode设计问题，无法在新窗口再次打开`
       );
+      return;
     }
 
     const uri = vscode.Uri.file(item.path);
