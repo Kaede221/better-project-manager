@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as path from "path";
 
-import { ProjectTreeProvider } from "./utils/projectTreeProvider";
+import ProjectTreeProvider from "./views/ProjectTreeProvider";
 import { CommandHandlers } from "./utils/commandHandlers";
 import { FileWatcher } from "./utils/fileWatcher";
 

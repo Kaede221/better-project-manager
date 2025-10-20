@@ -1,11 +1,13 @@
 import * as vscode from "vscode";
-import { IconManager } from "./iconManager";
-import { loadProjects } from "./common";
+import { IconManager } from "../utils/iconManager";
+import { loadProjects } from "../utils/common";
 
 /**
  * 项目树提供器
  */
-export class ProjectTreeProvider implements vscode.TreeDataProvider<TreeItem> {
+export default class ProjectTreeProvider
+  implements vscode.TreeDataProvider<TreeItem>
+{
   private _onDidChangeTreeData = new vscode.EventEmitter<
     TreeItem | undefined
   >();
@@ -60,10 +62,17 @@ export class ProjectTreeProvider implements vscode.TreeDataProvider<TreeItem> {
         project,
         this.configFile
       );
-      treeItem.iconPath = {
-        light: vscode.Uri.file(iconPath || ""),
-        dark: vscode.Uri.file(iconPath || ""),
-      };
+      if (iconPath) {
+        treeItem.iconPath = {
+          light: vscode.Uri.file(iconPath),
+          dark: vscode.Uri.file(iconPath),
+        };
+      } else {
+        // 否则 可能存在以外的问题 例如图标文件不存在
+        vscode.window.showErrorMessage(
+          `无法找到项目 ${project.name} 的图标文件`
+        );
+      }
     } else {
       // 使用VSCode内置的code图标
       treeItem.iconPath = new vscode.ThemeIcon("code");
