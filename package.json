@@ -153,6 +153,16 @@
           "group": "navigation@3"
         }
       ]
+    },
+    "configuration": {
+      "title": "Better Project Manager",
+      "properties": {
+        "betterProjectManager.showProjectPath": {
+          "type": "boolean",
+          "default": false,
+          "description": "是否在项目中显示项目路径"
+        }
+      }
     }
   },
   "scripts": {

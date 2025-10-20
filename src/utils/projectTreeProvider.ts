@@ -18,6 +18,13 @@ export class ProjectTreeProvider implements vscode.TreeDataProvider<TreeItem> {
     private configFile: string
   ) {
     this.iconManager = new IconManager(context);
+
+    // 监听配置变化，更新树视图
+    context.subscriptions.push(
+      vscode.workspace.onDidChangeConfiguration(() => {
+        this._onDidChangeTreeData.fire(undefined);
+      })
+    );
   }
 
   getTreeItem(element: TreeItem): vscode.TreeItem {
@@ -43,7 +50,14 @@ export class ProjectTreeProvider implements vscode.TreeDataProvider<TreeItem> {
       vscode.TreeItemCollapsibleState.None
     );
 
-    treeItem.description = project.path;
+    // 根据配置决定是否显示项目路径
+    const showPath = vscode.workspace
+      .getConfiguration("betterProjectManager")
+      .get("showProjectPath", true);
+    if (showPath) {
+      treeItem.description = project.path;
+    }
+
     treeItem.iconPath = {
       light: vscode.Uri.file(iconPath),
       dark: vscode.Uri.file(iconPath),
