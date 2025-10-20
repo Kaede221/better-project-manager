@@ -42,21 +42,26 @@
         {
           "id": "betterProjectManagerSidebar",
           "name": "项目列表",
-          "icon": "./resources/project-icon.svg",
-          "actionButtons": [
-            {
-              "command": "project-manager.addProject",
-              "icon": "$(add)"
-            },
-            {
-              "command": "project-manager.saveCurrentFolderAsProject",
-              "icon": "$(save)"
-            }
-          ]
+          "icon": "./resources/project-icon.svg"
         }
       ]
     },
     "commands": [
+      {
+        "command": "project-manager.saveCurrentFolderAsProject",
+        "title": "保存当前文件夹为项目",
+        "icon": "$(save)"
+      },
+      {
+        "command": "project-manager.addProject",
+        "title": "添加项目",
+        "icon": "$(add)"
+      },
+      {
+        "command": "project-manager.editConfig",
+        "title": "编辑配置文件",
+        "icon": "$(edit)"
+      },
       {
         "command": "project-manager.openProject",
         "title": "打开项目"
@@ -74,22 +79,12 @@
         "title": "重命名项目"
       },
       {
-        "command": "project-manager.addProject",
-        "title": "添加项目",
-        "icon": "$(add)"
-      },
-      {
         "command": "project-manager.deleteProject",
         "title": "删除项目"
       },
       {
         "command": "project-manager.changeIcon",
         "title": "修改项目图标"
-      },
-      {
-        "command": "project-manager.editConfig",
-        "title": "编辑配置文件",
-        "icon": "$(edit)"
       },
       {
         "command": "project-manager.moveProjectToFolder",
@@ -106,11 +101,6 @@
       {
         "command": "project-manager.deleteFolder",
         "title": "删除文件夹"
-      },
-      {
-        "command": "project-manager.saveCurrentFolderAsProject",
-        "title": "保存当前文件夹为项目",
-        "icon": "$(save)"
       }
     ],
     "menus": {
