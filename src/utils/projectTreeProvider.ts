@@ -39,29 +39,30 @@ export class ProjectTreeProvider implements vscode.TreeDataProvider<TreeItem> {
     }
 
     // 处理项目项
+    // 修改项目项的图标设置部分
     const project = element as ProjectItem;
-    const iconPath = this.iconManager.getProjectIconPath(
-      project,
-      this.configFile
-    );
-
     const treeItem = new vscode.TreeItem(
       project.name,
       vscode.TreeItemCollapsibleState.None
     );
 
-    // 根据配置决定是否显示项目路径
-    const showPath = vscode.workspace
-      .getConfiguration("betterProjectManager")
-      .get("showProjectPath", true);
-    if (showPath) {
-      treeItem.description = project.path;
+    treeItem.description = project.path;
+
+    // 修改图标设置 - 如果有自定义图标则使用，否则使用VSCode的code图标
+    if (project.icon) {
+      const iconPath = this.iconManager.getProjectIconPath(
+        project,
+        this.configFile
+      );
+      treeItem.iconPath = {
+        light: vscode.Uri.file(iconPath || ""),
+        dark: vscode.Uri.file(iconPath || ""),
+      };
+    } else {
+      // 使用VSCode内置的code图标
+      treeItem.iconPath = new vscode.ThemeIcon("code");
     }
 
-    treeItem.iconPath = {
-      light: vscode.Uri.file(iconPath),
-      dark: vscode.Uri.file(iconPath),
-    };
     treeItem.command = {
       command: "project-manager.openProject",
       title: "打开项目",

@@ -6,16 +6,7 @@ import * as fs from "fs";
  * 图标管理器
  */
 export class IconManager {
-  private defaultIconPath: string;
-
-  constructor(private context: vscode.ExtensionContext) {
-    // 默认图标路径
-    this.defaultIconPath = path.join(
-      vscode.extensions.getExtension(this.context.extension.id)!.extensionPath,
-      "resources",
-      "icon-default-project.svg"
-    );
-  }
+  constructor(private context: vscode.ExtensionContext) {}
 
   /**
    * 获取项目图标路径
@@ -23,16 +14,20 @@ export class IconManager {
    * @param configFile 配置文件路径
    * @returns 图标路径
    */
-  getProjectIconPath(project: ProjectItem, configFile: string): string {
-    // 项目自定义图标路径（全局目录）
-    const globalIconPath = project.icon
-      ? path.join(configFile ? path.dirname(configFile) : "", project.icon)
-      : "";
+  getProjectIconPath(
+    project: ProjectItem,
+    configFile: string
+  ): string | undefined {
+    // 仅返回自定义图标路径或undefined
+    if (!project.icon) {
+      return undefined;
+    }
 
-    // 判断自定义图标是否存在
-    return project.icon && fs.existsSync(globalIconPath)
-      ? globalIconPath
-      : this.defaultIconPath;
+    const globalIconPath = path.join(
+      configFile ? path.dirname(configFile) : "",
+      project.icon
+    );
+    return fs.existsSync(globalIconPath) ? globalIconPath : undefined;
   }
 
   /**
