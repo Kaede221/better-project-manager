@@ -64,6 +64,9 @@ export class CommandHandlers {
     }
   }
 
+  /**
+   * 添加项目命令处理器
+   */
   async handleAddProject(): Promise<void> {
     const name = await vscode.window.showInputBox({
       prompt: "输入项目名称",
@@ -304,6 +307,80 @@ export class CommandHandlers {
     } catch (error) {
       vscode.window.showErrorMessage(`打开配置文件失败: ${error}`);
     }
+  }
+
+  /**
+   * 保存当前文件夹为项目命令处理器
+   */
+  async handleSaveCurrentFolderAsProject(): Promise<void> {
+    // 获取当前打开的文件夹
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (!workspaceFolders || workspaceFolders.length === 0) {
+      vscode.window.showErrorMessage("没有打开的文件夹");
+      return;
+    }
+
+    const currentFolderPath = workspaceFolders[0].uri.fsPath;
+    const folderName = path.basename(currentFolderPath);
+
+    // 询问项目名称，默认使用文件夹名称
+    const name = await vscode.window.showInputBox({
+      prompt: "输入项目名称",
+      value: folderName,
+    });
+
+    if (!name || !name.trim()) {
+      return;
+    }
+
+    // 询问是否添加到文件夹
+    const addToFolder = await vscode.window.showQuickPick(["是", "否"], {
+      placeHolder: "是否将项目添加到文件夹？",
+      canPickMany: false,
+    });
+
+    let folderNameValue = undefined;
+    if (addToFolder === "是") {
+      folderNameValue = await vscode.window.showInputBox({
+        prompt: "输入文件夹名称",
+      });
+    }
+
+    // 询问是否设置图标
+    const setIcon = await vscode.window.showQuickPick(["是", "否"], {
+      placeHolder: "是否设置项目图标？",
+      canPickMany: false,
+    });
+
+    let iconName = "";
+
+    if (setIcon === "是") {
+      const iconUri = await vscode.window.showOpenDialog({
+        canSelectFiles: true,
+        canSelectFolders: false,
+        canSelectMany: false,
+        filters: { SVG: ["svg"] },
+        openLabel: "选择项目图标 (SVG)",
+      });
+
+      if (iconUri && iconUri.length > 0) {
+        iconName = this.iconManager.copyIconToGlobal(
+          iconUri[0].fsPath,
+          this.configFile
+        );
+      }
+    }
+
+    const projects = loadProjects(this.configFile);
+    projects.push({
+      name: name.trim(),
+      path: currentFolderPath,
+      icon: iconName || undefined,
+      folder: folderNameValue || undefined,
+    });
+
+    saveProjects(projects, this.configFile);
+    this.refreshTree();
   }
 
   /**

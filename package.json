@@ -40,6 +40,10 @@
             {
               "command": "project-manager.addProject",
               "icon": "$(add)"
+            },
+            {
+              "command": "project-manager.saveCurrentFolderAsProject",
+              "icon": "$(save)"
             }
           ]
         }
@@ -87,10 +91,20 @@
       {
         "command": "project-manager.removeFromFolder",
         "title": "从文件夹移除"
+      },
+      {
+        "command": "project-manager.saveCurrentFolderAsProject",
+        "title": "保存当前文件夹为项目",
+        "icon": "$(save)"
       }
     ],
     "menus": {
       "view/title": [
+        {
+          "command": "project-manager.saveCurrentFolderAsProject",
+          "when": "view == betterProjectManagerSidebar",
+          "group": "navigation"
+        },
         {
           "command": "project-manager.addProject",
           "when": "view == betterProjectManagerSidebar",

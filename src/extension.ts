@@ -20,7 +20,10 @@ export function activate(context: vscode.ExtensionContext) {
 
   // 初始化树提供器
   treeProvider = new ProjectTreeProvider(context, CONFIG_FILE);
-  vscode.window.registerTreeDataProvider("betterProjectManagerSidebar", treeProvider);
+  vscode.window.registerTreeDataProvider(
+    "betterProjectManagerSidebar",
+    treeProvider
+  );
 
   // 初始化命令处理器
   commandHandlers = new CommandHandlers(context, CONFIG_FILE, treeProvider);
@@ -89,6 +92,10 @@ function registerCommands(
     {
       command: "project-manager.deleteFolder",
       handler: handlers.handleDeleteFolder.bind(handlers),
+    },
+    {
+      command: "project-manager.saveCurrentFolderAsProject",
+      handler: handlers.handleSaveCurrentFolderAsProject.bind(handlers),
     },
   ];
 
