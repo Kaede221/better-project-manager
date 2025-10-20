@@ -23,7 +23,7 @@ export class CommandHandlers {
    * @param projectPath 项目路径
    * @returns 是否已打开
    */
-  private isProjectAlreadyOpen(projectPath: string): boolean {
+  private __isProjectAlreadyOpen(projectPath: string): boolean {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (!workspaceFolders || workspaceFolders.length === 0) {
       return false;
@@ -40,10 +40,19 @@ export class CommandHandlers {
   }
 
   /**
-   * 打开项目命令处理器
+   * 刷新树视图
+   */
+  private __refreshTree() {
+    if (this.treeProvider && "refresh" in this.treeProvider) {
+      (this.treeProvider as any).refresh();
+    }
+  }
+
+  /**
+   * * 打开项目命令处理器
    */
   async handleOpenProject(item: ProjectItem): Promise<void> {
-    if (this.isProjectAlreadyOpen(item.path)) {
+    if (this.__isProjectAlreadyOpen(item.path)) {
       vscode.window.showInformationMessage(`已经打开项目：${item.name}`);
       return;
     }
@@ -53,10 +62,10 @@ export class CommandHandlers {
   }
 
   /**
-   * 在当前窗口打开项目命令处理器
+   * * 在当前窗口打开项目命令处理器
    */
   async handleOpenProjectInCurrentWindow(item: ProjectItem): Promise<void> {
-    if (this.isProjectAlreadyOpen(item.path)) {
+    if (this.__isProjectAlreadyOpen(item.path)) {
       vscode.window.showInformationMessage(`已经打开项目：${item.name}`);
       return;
     }
@@ -66,10 +75,10 @@ export class CommandHandlers {
   }
 
   /**
-   * 在新窗口打开项目命令处理器
+   * * 在新窗口打开项目命令处理器
    */
   async handleOpenProjectInNewWindow(item: ProjectItem): Promise<void> {
-    if (this.isProjectAlreadyOpen(item.path)) {
+    if (this.__isProjectAlreadyOpen(item.path)) {
       vscode.window.showWarningMessage(
         `已经打开项目：${item.name}，由于VSCode设计问题，无法在新窗口再次打开`
       );
@@ -81,7 +90,7 @@ export class CommandHandlers {
   }
 
   /**
-   * 重命名项目命令处理器
+   * * 重命名项目命令处理器
    */
   async handleRenameProject(item: ProjectItem): Promise<void> {
     const projects = loadProjects(this.configFile);
@@ -98,12 +107,12 @@ export class CommandHandlers {
     if (newName && newName.trim() && newName !== item.name) {
       projects[idx].name = newName.trim();
       saveProjects(projects, this.configFile);
-      this.refreshTree();
+      this.__refreshTree();
     }
   }
 
   /**
-   * 添加项目命令处理器
+   * * 添加新项目命令处理器
    */
   async handleAddProject(): Promise<void> {
     const name = await vscode.window.showInputBox({
@@ -172,11 +181,11 @@ export class CommandHandlers {
     });
 
     saveProjects(projects, this.configFile);
-    this.refreshTree();
+    this.__refreshTree();
   }
 
   /**
-   * 移动项目到文件夹命令处理器
+   * * 移动项目到文件夹命令处理器
    */
   async handleMoveProjectToFolder(item: ProjectItem): Promise<void> {
     // 获取所有项目 方便选择
@@ -205,13 +214,13 @@ export class CommandHandlers {
       if (idx !== -1) {
         projects[idx].folder = folderName;
         saveProjects(projects, this.configFile);
-        this.refreshTree();
+        this.__refreshTree();
       }
     }
   }
 
   /**
-   * 重命名文件夹命令处理器
+   * * 重命名文件夹命令处理器
    */
   async handleRenameFolder(item: FolderItem): Promise<void> {
     const newName = await vscode.window.showInputBox({
@@ -230,12 +239,12 @@ export class CommandHandlers {
       });
 
       saveProjects(projects, this.configFile);
-      this.refreshTree();
+      this.__refreshTree();
     }
   }
 
   /**
-   * 删除文件夹命令处理器
+   * * 删除文件夹命令处理器
    */
   async handleDeleteFolder(item: FolderItem): Promise<void> {
     const confirm = await vscode.window.showWarningMessage(
@@ -255,12 +264,12 @@ export class CommandHandlers {
       });
 
       saveProjects(projects, this.configFile);
-      this.refreshTree();
+      this.__refreshTree();
     }
   }
 
   /**
-   * 删除项目命令处理器
+   * * 删除项目命令处理器
    */
   async handleDeleteProject(item: ProjectItem): Promise<void> {
     const projects = loadProjects(this.configFile);
@@ -278,12 +287,12 @@ export class CommandHandlers {
     if (confirm === "删除") {
       projects.splice(idx, 1);
       saveProjects(projects, this.configFile);
-      this.refreshTree();
+      this.__refreshTree();
     }
   }
 
   /**
-   * 修改项目图标命令处理器
+   * * 修改项目图标命令处理器
    */
   async handleChangeIcon(item: ProjectItem): Promise<void> {
     const iconUri = await vscode.window.showOpenDialog({
@@ -311,37 +320,11 @@ export class CommandHandlers {
 
     projects[idx].icon = iconName;
     saveProjects(projects, this.configFile);
-    this.refreshTree();
+    this.__refreshTree();
   }
 
   /**
-   * 编辑配置文件命令处理器
-   */
-  async handleEditConfig(): Promise<void> {
-    try {
-      // 确保配置文件存在
-      if (!fs.existsSync(this.configFile)) {
-        const dir = path.dirname(this.configFile);
-        if (!fs.existsSync(dir)) {
-          fs.mkdirSync(dir, { recursive: true });
-        }
-        fs.writeFileSync(this.configFile, "[]", "utf8");
-      }
-
-      // 打开配置文件进行编辑
-      const configUri = vscode.Uri.file(this.configFile);
-      await vscode.window.showTextDocument(configUri);
-
-      vscode.window.showInformationMessage(
-        "配置文件已打开，编辑完成后保存即可生效"
-      );
-    } catch (error) {
-      vscode.window.showErrorMessage(`打开配置文件失败: ${error}`);
-    }
-  }
-
-  /**
-   * 保存当前文件夹为项目命令处理器
+   * * 保存当前文件夹为项目命令处理器
    */
   async handleSaveCurrentFolderAsProject(): Promise<void> {
     // 获取当前打开的文件夹
@@ -411,15 +394,32 @@ export class CommandHandlers {
     });
 
     saveProjects(projects, this.configFile);
-    this.refreshTree();
+    this.__refreshTree();
   }
 
   /**
-   * 刷新树视图
+   * * 编辑配置文件命令处理器
    */
-  private refreshTree(): void {
-    if (this.treeProvider && "refresh" in this.treeProvider) {
-      (this.treeProvider as any).refresh();
+  async handleEditConfig(): Promise<void> {
+    try {
+      // 确保配置文件存在
+      if (!fs.existsSync(this.configFile)) {
+        const dir = path.dirname(this.configFile);
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir, { recursive: true });
+        }
+        fs.writeFileSync(this.configFile, "[]", "utf8");
+      }
+
+      // 打开配置文件进行编辑
+      const configUri = vscode.Uri.file(this.configFile);
+      await vscode.window.showTextDocument(configUri);
+
+      vscode.window.showInformationMessage(
+        "配置文件已打开，编辑完成后保存即可生效"
+      );
+    } catch (error) {
+      vscode.window.showErrorMessage(`打开配置文件失败: ${error}`);
     }
   }
 }
