@@ -19,9 +19,35 @@ export class CommandHandlers {
   }
 
   /**
+   * 检查项目是否已经在当前窗口打开
+   * @param projectPath 项目路径
+   * @returns 是否已打开
+   */
+  private isProjectAlreadyOpen(projectPath: string): boolean {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (!workspaceFolders || workspaceFolders.length === 0) {
+      return false;
+    }
+
+    // 标准化路径以进行比较
+    const normalizedProjectPath = path.normalize(projectPath);
+
+    // 检查当前打开的工作区文件夹是否与项目路径相同
+    return workspaceFolders.some((folder) => {
+      const normalizedFolderPath = path.normalize(folder.uri.fsPath);
+      return normalizedFolderPath === normalizedProjectPath;
+    });
+  }
+
+  /**
    * 打开项目命令处理器
    */
   async handleOpenProject(item: ProjectItem): Promise<void> {
+    if (this.isProjectAlreadyOpen(item.path)) {
+      vscode.window.showInformationMessage(`已经打开项目：${item.name}`);
+      return;
+    }
+
     const uri = vscode.Uri.file(item.path);
     await vscode.commands.executeCommand("vscode.openFolder", uri, true);
   }
@@ -30,6 +56,11 @@ export class CommandHandlers {
    * 在当前窗口打开项目命令处理器
    */
   async handleOpenProjectInCurrentWindow(item: ProjectItem): Promise<void> {
+    if (this.isProjectAlreadyOpen(item.path)) {
+      vscode.window.showInformationMessage(`已经打开项目：${item.name}`);
+      return;
+    }
+
     const uri = vscode.Uri.file(item.path);
     await vscode.commands.executeCommand("vscode.openFolder", uri, false);
   }
@@ -38,6 +69,12 @@ export class CommandHandlers {
    * 在新窗口打开项目命令处理器
    */
   async handleOpenProjectInNewWindow(item: ProjectItem): Promise<void> {
+    if (this.isProjectAlreadyOpen(item.path)) {
+      vscode.window.showInformationMessage(
+        `已经打开项目：${item.name}，将在新窗口再次打开`
+      );
+    }
+
     const uri = vscode.Uri.file(item.path);
     await vscode.commands.executeCommand("vscode.openFolder", uri, true);
   }
