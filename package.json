@@ -3,6 +3,7 @@
   "displayName": "Better Project Manager",
   "description": "一个用于管理项目的VSCode扩展",
   "publisher": "kaedeshimizu",
+  "icon": "./resources/logo.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/Kaede221/better-project-manager.git"
@@ -176,7 +177,7 @@
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
     "check-types": "tsc --noEmit",
-    "lint": "eslint src"
+    "publish": "vsce publish"
   },
   "devDependencies": {
     "@types/vscode": "^1.105.0",
