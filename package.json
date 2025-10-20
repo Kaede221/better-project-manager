@@ -100,6 +100,14 @@
         "title": "从文件夹移除"
       },
       {
+        "command": "project-manager.renameFolder",
+        "title": "重命名文件夹"
+      },
+      {
+        "command": "project-manager.deleteFolder",
+        "title": "删除文件夹"
+      },
+      {
         "command": "project-manager.saveCurrentFolderAsProject",
         "title": "保存当前文件夹为项目",
         "icon": "$(save)"
@@ -158,6 +166,16 @@
           "command": "project-manager.deleteProject",
           "when": "view == betterProjectManagerSidebar && viewItem == projectItem",
           "group": "navigation@3"
+        },
+        {
+          "command": "project-manager.renameFolder",
+          "when": "view == betterProjectManagerSidebar && viewItem == folderItem",
+          "group": "navigation@1"
+        },
+        {
+          "command": "project-manager.deleteFolder",
+          "when": "view == betterProjectManagerSidebar && viewItem == folderItem",
+          "group": "navigation@2"
         }
       ]
     },
