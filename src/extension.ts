@@ -20,7 +20,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   // 初始化树提供器
   treeProvider = new ProjectTreeProvider(context, CONFIG_FILE);
-  vscode.window.registerTreeDataProvider("numberListView", treeProvider);
+  vscode.window.registerTreeDataProvider("betterProjectManagerSidebar", treeProvider);
 
   // 初始化命令处理器
   commandHandlers = new CommandHandlers(context, CONFIG_FILE, treeProvider);

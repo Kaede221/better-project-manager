@@ -33,7 +33,7 @@
     "views": {
       "projectManagerSidebar": [
         {
-          "id": "numberListView",
+          "id": "betterProjectManagerSidebar",
           "name": "项目列表",
           "icon": "./resources/project-icon.svg",
           "actionButtons": [
@@ -93,49 +93,49 @@
       "view/title": [
         {
           "command": "project-manager.addProject",
-          "when": "view == numberListView",
+          "when": "view == betterProjectManagerSidebar",
           "group": "navigation"
         },
         {
           "command": "project-manager.editConfig",
-          "when": "view == numberListView",
+          "when": "view == betterProjectManagerSidebar",
           "group": "navigation"
         }
       ],
       "view/item/context": [
         {
           "command": "project-manager.openProjectInCurrentWindow",
-          "when": "view == numberListView && viewItem == projectItem",
+          "when": "view == betterProjectManagerSidebar && viewItem == projectItem",
           "group": "navigation@1"
         },
         {
           "command": "project-manager.openProjectInNewWindow",
-          "when": "view == numberListView && viewItem == projectItem",
+          "when": "view == betterProjectManagerSidebar && viewItem == projectItem",
           "group": "navigation@1"
         },
         {
           "command": "project-manager.renameProject",
-          "when": "view == numberListView && viewItem == projectItem",
+          "when": "view == betterProjectManagerSidebar && viewItem == projectItem",
           "group": "navigation@1"
         },
         {
           "command": "project-manager.changeIcon",
-          "when": "view == numberListView && viewItem == projectItem",
+          "when": "view == betterProjectManagerSidebar && viewItem == projectItem",
           "group": "navigation@2"
         },
         {
           "command": "project-manager.moveProjectToFolder",
-          "when": "view == numberListView && viewItem == projectItem",
+          "when": "view == betterProjectManagerSidebar && viewItem == projectItem",
           "group": "navigation@2"
         },
         {
           "command": "project-manager.removeFromFolder",
-          "when": "view == numberListView && viewItem == projectItem && projectFolder",
+          "when": "view == betterProjectManagerSidebar && viewItem == projectItem && projectFolder",
           "group": "navigation@2"
         },
         {
           "command": "project-manager.deleteProject",
-          "when": "view == numberListView && viewItem == projectItem",
+          "when": "view == betterProjectManagerSidebar && viewItem == projectItem",
           "group": "navigation@3"
         }
       ]
