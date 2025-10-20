@@ -5,36 +5,37 @@ import { ProjectTreeProvider } from "./utils/projectTreeProvider";
 import { CommandHandlers } from "./utils/commandHandlers";
 import { FileWatcher } from "./utils/fileWatcher";
 
-// 记录配置文件信息
-let CONFIG_FILE: string = "";
-let treeProvider: ProjectTreeProvider | undefined;
-let commandHandlers: CommandHandlers | undefined;
+// 记录文件监视器, 方便后端关闭的时候清理资源
 let fileWatcher: FileWatcher | undefined;
 
 export function activate(context: vscode.ExtensionContext) {
   // 修改配置文件路径为 VSCode 全局存储目录
-  CONFIG_FILE = path.join(
+  const configFile = path.join(
     context.globalStorageUri.fsPath,
     "project-manager.json"
   );
 
   // 初始化树提供器
-  treeProvider = new ProjectTreeProvider(context, CONFIG_FILE);
+  const treeProvider = new ProjectTreeProvider(context, configFile);
   vscode.window.registerTreeDataProvider(
     "betterProjectManagerSidebar",
     treeProvider
   );
 
   // 初始化命令处理器
-  commandHandlers = new CommandHandlers(context, CONFIG_FILE, treeProvider);
+  const commandHandlers = new CommandHandlers(
+    context,
+    configFile,
+    treeProvider
+  );
 
   // 初始化文件监视器
   fileWatcher = new FileWatcher();
-  const watcher = fileWatcher.createConfigWatcher(CONFIG_FILE, () => {
+  const watcher = fileWatcher.createConfigWatcher(configFile, () => {
     treeProvider?.refresh();
   });
 
-  // 注册命令
+  // 统一注册命令
   registerCommands(context, commandHandlers);
 
   // 将监视器添加到订阅中
@@ -42,7 +43,7 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 /**
- * 注册所有命令
+ * NOTE 注册所有命令
  */
 function registerCommands(
   context: vscode.ExtensionContext,
