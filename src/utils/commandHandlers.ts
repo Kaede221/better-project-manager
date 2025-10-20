@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
-import { saveProjects, loadProjects } from "../utils/common";
+import { saveProjects, loadProjects, getFolderList } from "../utils/common";
 import { IconManager } from "../utils/iconManager";
 
 /**
@@ -179,18 +179,11 @@ export class CommandHandlers {
    * 移动项目到文件夹命令处理器
    */
   async handleMoveProjectToFolder(item: ProjectItem): Promise<void> {
-    // 获取现有文件夹列表
+    // 获取所有项目 方便选择
     const projects = loadProjects(this.configFile);
-    const folderSet = new Set<string>();
 
-    projects.forEach((project) => {
-      if (project.folder) {
-        folderSet.add(project.folder);
-      }
-    });
-
-    const folders = Array.from(folderSet);
-    const options = ["新建文件夹", ...folders, "根目录"];
+    // 获取所有的文件夹组成的列表
+    const options = ["新建文件夹", "根目录", ...getFolderList(this.configFile)];
 
     const choice = await vscode.window.showQuickPick(options, {
       placeHolder: "选择要移动到的文件夹",
