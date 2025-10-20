@@ -32,8 +32,6 @@ export class FileWatcher {
 
     // 监听文件变化事件
     watcher.onDidChange(onConfigChange);
-    watcher.onDidCreate(onConfigChange);
-    watcher.onDidDelete(onConfigChange);
 
     this.watcher = watcher;
     return watcher;

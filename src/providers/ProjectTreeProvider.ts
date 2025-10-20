@@ -5,9 +5,7 @@ import { loadProjects } from "../utils/common";
 /**
  * 项目树提供器
  */
-export default class ProjectTreeProvider
-  implements vscode.TreeDataProvider<TreeItem>
-{
+export class ProjectTreeProvider implements vscode.TreeDataProvider<TreeItem> {
   private _onDidChangeTreeData = new vscode.EventEmitter<
     TreeItem | undefined
   >();

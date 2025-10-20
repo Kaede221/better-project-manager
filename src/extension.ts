@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 import * as path from "path";
 
-import { CommandHandlers } from "./utils/commandHandlers";
-import { FileWatcher } from "./utils/fileWatcher";
+import { CommandHandlers } from "./handlers";
+import { ProjectTreeProvider } from "./providers";
 
-import ProjectTreeProvider from "./views/ProjectTreeProvider";
+import { FileWatcher } from "./utils/fileWatcher";
 
 // 记录文件监视器, 方便后端关闭的时候清理资源
 let fileWatcher: FileWatcher | undefined;
