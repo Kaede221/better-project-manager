@@ -46,7 +46,13 @@ export class ProjectTreeProvider implements vscode.TreeDataProvider<TreeItem> {
       vscode.TreeItemCollapsibleState.None
     );
 
-    treeItem.description = project.path;
+    // 根据配置决定是否显示项目路径
+    const showPath = vscode.workspace
+      .getConfiguration("betterProjectManager")
+      .get("showProjectPath", true);
+    if (showPath) {
+      treeItem.description = project.path;
+    }
 
     // 修改图标设置 - 如果有自定义图标则使用，否则使用VSCode的code图标
     if (project.icon) {
