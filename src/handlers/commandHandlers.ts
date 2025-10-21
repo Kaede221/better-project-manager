@@ -1,7 +1,11 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
-import { saveProjects, loadProjects, getFolderList } from "../utils/common";
+import {
+  saveProjects,
+  loadProjects,
+  commonSelectFolder,
+} from "../utils/common";
 import { IconManager } from "../utils/iconManager";
 
 /**
@@ -142,9 +146,10 @@ export class CommandHandlers {
 
     let folderName = undefined;
     if (addToFolder === "是") {
-      folderName = await vscode.window.showInputBox({
-        prompt: "输入文件夹名称",
-      });
+      folderName = await commonSelectFolder(
+        this.configFile,
+        "请选择要添加到的文件夹"
+      );
     }
 
     // 询问是否设置图标
@@ -188,34 +193,24 @@ export class CommandHandlers {
    * * 移动项目到文件夹命令处理器
    */
   async handleMoveProjectToFolder(item: ProjectItem): Promise<void> {
-    // 获取所有项目 方便选择
     const projects = loadProjects(this.configFile);
-
-    // 获取所有的文件夹组成的列表
-    const options = ["新建文件夹", "根目录", ...getFolderList(this.configFile)];
-
-    const choice = await vscode.window.showQuickPick(options, {
-      placeHolder: "选择要移动到的文件夹",
-      canPickMany: false,
-    });
-
-    let folderName: string | undefined = undefined;
-
-    if (choice === "新建文件夹") {
-      folderName = await vscode.window.showInputBox({
-        prompt: "输入新文件夹名称",
-      });
-    } else if (choice !== "根目录") {
-      folderName = choice;
-    }
-
-    if (folderName !== undefined || choice === "根目录") {
-      const idx = projects.findIndex((p) => p.path === item.path);
-      if (idx !== -1) {
+    const folderName = await commonSelectFolder(
+      this.configFile,
+      "请选择要移动到的文件夹"
+    );
+    // 获取这个元素的坐标
+    const idx = projects.findIndex((p) => p.path === item.path);
+    if (idx !== -1) {
+      if (folderName !== undefined) {
         projects[idx].folder = folderName;
-        saveProjects(projects, this.configFile);
-        this.__refreshTree();
+      } else {
+        // 否则就是移动到根目录 直接删除folder字段即可
+        delete projects[idx].folder;
       }
+
+      // 统一进行保存更新
+      saveProjects(projects, this.configFile);
+      this.__refreshTree();
     }
   }
 

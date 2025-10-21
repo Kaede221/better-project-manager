@@ -48,3 +48,33 @@ export const getFolderList = (configFile: string) => {
   });
   return Array.from(folderSet);
 };
+
+/**
+ * 通用的选择文件夹方法
+ * @description 允许选择新文件夹, 或者已经存在的文件夹; 如果选择新文件夹, 则自动获取输入
+ * @returns 选择的文件夹的名称, 如果是根目录则为undefined 否则为对应文件夹的名称
+ */
+export const commonSelectFolder = async (
+  configFile: string,
+  message: string
+) => {
+  let folderName: string | undefined;
+  const folderList = getFolderList(configFile);
+  const selectedFolder = await vscode.window.showQuickPick(
+    ["新建文件夹", ...folderList, "根目录"],
+    {
+      placeHolder: message,
+      canPickMany: false,
+    }
+  );
+  if (selectedFolder === "新建文件夹") {
+    folderName = await vscode.window.showInputBox({
+      prompt: "输入新文件夹名称",
+    });
+  } else if (selectedFolder !== "根目录") {
+    folderName = selectedFolder;
+  } else {
+    folderName = undefined;
+  }
+  return folderName;
+};
