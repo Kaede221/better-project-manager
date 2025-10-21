@@ -87,6 +87,7 @@ function registerCommands(
       command: "project-manager.changeIcon",
       handler: handlers.handleChangeIcon.bind(handlers),
     },
+    // NOTE 移除项目图标
     {
       command: "project-manager.removeProjectIcon",
       handler: handlers.handleRemoveProjectIcon.bind(handlers),
