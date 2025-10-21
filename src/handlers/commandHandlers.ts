@@ -319,7 +319,7 @@ export class CommandHandlers {
   }
 
   /**
-   * 重置项目图标
+   * * 重置项目图标
    */
   async handleRemoveProjectIcon(item: ProjectItem): Promise<void> {
     // 获取所有的项目
