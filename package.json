@@ -129,52 +129,52 @@
         {
           "command": "project-manager.openProjectInCurrentWindow",
           "when": "view == betterProjectManagerSidebar && viewItem == projectItem",
-          "group": "navigation@1"
+          "group": "sider-group-1@1"
         },
         {
           "command": "project-manager.openProjectInNewWindow",
           "when": "view == betterProjectManagerSidebar && viewItem == projectItem",
-          "group": "navigation@1"
+          "group": "sider-group-1@2"
         },
         {
           "command": "project-manager.renameProject",
           "when": "view == betterProjectManagerSidebar && viewItem == projectItem",
-          "group": "navigation@1"
+          "group": "sider-group-2@1"
         },
         {
           "command": "project-manager.changeIcon",
           "when": "view == betterProjectManagerSidebar && viewItem == projectItem",
-          "group": "navigation@2"
+          "group": "sider-group-2@2"
         },
         {
           "command": "project-manager.removeProjectIcon",
           "when": "view == betterProjectManagerSidebar && viewItem == projectItem",
-          "group": "navigation@2"
+          "group": "sider-group-2@3"
         },
         {
           "command": "project-manager.moveProjectToFolder",
           "when": "view == betterProjectManagerSidebar && viewItem == projectItem",
-          "group": "navigation@2"
+          "group": "sider-group-3@1"
         },
         {
           "command": "project-manager.removeFromFolder",
           "when": "view == betterProjectManagerSidebar && viewItem == projectItem && projectFolder",
-          "group": "navigation@2"
+          "group": "sider-group-3@2"
         },
         {
           "command": "project-manager.deleteProject",
           "when": "view == betterProjectManagerSidebar && viewItem == projectItem",
-          "group": "navigation@3"
+          "group": "sider-group-4@1"
         },
         {
           "command": "project-manager.renameFolder",
           "when": "view == betterProjectManagerSidebar && viewItem == folderItem",
-          "group": "navigation@1"
+          "group": "folder-sider-group-1@1"
         },
         {
           "command": "project-manager.deleteFolder",
           "when": "view == betterProjectManagerSidebar && viewItem == folderItem",
-          "group": "navigation@2"
+          "group": "folder-sider-group-1@2"
         }
       ]
     },
