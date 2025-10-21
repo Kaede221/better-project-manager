@@ -72,8 +72,14 @@ export class ProjectTreeProvider implements vscode.TreeDataProvider<TreeItem> {
         );
       }
     } else {
-      // 使用VSCode内置的code图标
-      treeItem.iconPath = new vscode.ThemeIcon("code");
+      // 判断配置 是否显示默认项目图标
+      const showDefaultIcon = vscode.workspace
+        .getConfiguration("betterProjectManager")
+        .get("showDefaultProjectIcon", true);
+
+      if (showDefaultIcon) {
+        treeItem.iconPath = new vscode.ThemeIcon("code");
+      }
     }
 
     treeItem.command = {

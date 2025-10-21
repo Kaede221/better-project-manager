@@ -185,6 +185,11 @@
           "type": "boolean",
           "default": false,
           "description": "是否在项目中显示项目路径"
+        },
+        "betterProjectManager.showDefaultProjectIcon": {
+          "type": "boolean",
+          "default": true,
+          "description": "是否显示默认的项目图标"
         }
       }
     }
