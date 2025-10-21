@@ -18,7 +18,7 @@
     "name": "Kaede Shimizu",
     "email": "kaedeshimizu@qq.com"
   },
-  "version": "0.0.6",
+  "version": "0.0.7",
   "engines": {
     "vscode": "^1.100.0"
   },
@@ -87,6 +87,10 @@
         "title": "修改项目图标"
       },
       {
+        "command": "project-manager.removeProjectIcon",
+        "title": "重置项目图标"
+      },
+      {
         "command": "project-manager.moveProjectToFolder",
         "title": "移动到文件夹"
       },
@@ -139,6 +143,11 @@
         },
         {
           "command": "project-manager.changeIcon",
+          "when": "view == betterProjectManagerSidebar && viewItem == projectItem",
+          "group": "navigation@2"
+        },
+        {
+          "command": "project-manager.removeProjectIcon",
           "when": "view == betterProjectManagerSidebar && viewItem == projectItem",
           "group": "navigation@2"
         },

@@ -88,6 +88,10 @@ function registerCommands(
       handler: handlers.handleChangeIcon.bind(handlers),
     },
     {
+      command: "project-manager.removeProjectIcon",
+      handler: handlers.handleRemoveProjectIcon.bind(handlers),
+    },
+    {
       // NOTE 修改配置文件
       command: "project-manager.editConfig",
       handler: handlers.handleEditConfig.bind(handlers),

@@ -53,7 +53,7 @@ export class CommandHandlers {
   }
 
   /**
-   * * 打开项目命令处理器
+   * * 打开项目
    */
   async handleOpenProject(item: ProjectItem): Promise<void> {
     if (this.__isProjectAlreadyOpen(item.path)) {
@@ -66,7 +66,7 @@ export class CommandHandlers {
   }
 
   /**
-   * * 在当前窗口打开项目命令处理器
+   * * 在当前窗口打开项目
    */
   async handleOpenProjectInCurrentWindow(item: ProjectItem): Promise<void> {
     if (this.__isProjectAlreadyOpen(item.path)) {
@@ -79,7 +79,7 @@ export class CommandHandlers {
   }
 
   /**
-   * * 在新窗口打开项目命令处理器
+   * * 在新窗口打开项目
    */
   async handleOpenProjectInNewWindow(item: ProjectItem): Promise<void> {
     if (this.__isProjectAlreadyOpen(item.path)) {
@@ -94,7 +94,7 @@ export class CommandHandlers {
   }
 
   /**
-   * * 重命名项目命令处理器
+   * * 重命名项目
    */
   async handleRenameProject(item: ProjectItem): Promise<void> {
     const projects = loadProjects(this.configFile);
@@ -116,7 +116,7 @@ export class CommandHandlers {
   }
 
   /**
-   * * 添加新项目命令处理器
+   * * 添加新项目
    */
   async handleAddProject(): Promise<void> {
     const name = await vscode.window.showInputBox({
@@ -190,7 +190,7 @@ export class CommandHandlers {
   }
 
   /**
-   * * 移动项目到文件夹命令处理器
+   * * 移动项目到文件夹
    */
   async handleMoveProjectToFolder(item: ProjectItem): Promise<void> {
     const projects = loadProjects(this.configFile);
@@ -215,7 +215,7 @@ export class CommandHandlers {
   }
 
   /**
-   * * 重命名文件夹命令处理器
+   * * 重命名文件夹
    */
   async handleRenameFolder(item: FolderItem): Promise<void> {
     const newName = await vscode.window.showInputBox({
@@ -239,7 +239,7 @@ export class CommandHandlers {
   }
 
   /**
-   * * 删除文件夹命令处理器
+   * * 删除文件夹
    */
   async handleDeleteFolder(item: FolderItem): Promise<void> {
     const confirm = await vscode.window.showWarningMessage(
@@ -264,7 +264,7 @@ export class CommandHandlers {
   }
 
   /**
-   * * 删除项目命令处理器
+   * * 删除项目
    */
   async handleDeleteProject(item: ProjectItem): Promise<void> {
     const projects = loadProjects(this.configFile);
@@ -287,7 +287,7 @@ export class CommandHandlers {
   }
 
   /**
-   * * 修改项目图标命令处理器
+   * * 修改项目图标
    */
   async handleChangeIcon(item: ProjectItem): Promise<void> {
     const iconUri = await vscode.window.showOpenDialog({
@@ -319,7 +319,27 @@ export class CommandHandlers {
   }
 
   /**
-   * * 保存当前文件夹为项目命令处理器
+   * 重置项目图标
+   */
+  async handleRemoveProjectIcon(item: ProjectItem): Promise<void> {
+    // 获取所有的项目
+    const projects = loadProjects(this.configFile);
+    const idx = projects.findIndex((p) => p.path === item.path);
+    if (idx === -1) {
+      return;
+    }
+
+    // 直接移除项目的图标即可
+    delete projects[idx].icon;
+
+    // 通用保存操作
+    saveProjects(projects, this.configFile);
+    this.__refreshTree();
+    vscode.window.showInformationMessage(`已重置项目 "${item.name}" 的图标`);
+  }
+
+  /**
+   * * 保存当前文件夹为项目
    */
   async handleSaveCurrentFolderAsProject(): Promise<void> {
     // 获取当前打开的文件夹
@@ -393,7 +413,7 @@ export class CommandHandlers {
   }
 
   /**
-   * * 编辑配置文件命令处理器
+   * * 编辑配置文件
    */
   async handleEditConfig(): Promise<void> {
     try {
