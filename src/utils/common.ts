@@ -52,6 +52,8 @@ export const getFolderList = (configFile: string) => {
 /**
  * 通用的选择文件夹方法
  * @description 允许选择新文件夹, 或者已经存在的文件夹; 如果选择新文件夹, 则自动获取输入
+ * @param configFile 配置文件路径 会自动进行读取
+ * @param message 配置信息内容
  * @returns 选择的文件夹的名称, 如果是根目录则为undefined 否则为对应文件夹的名称
  */
 export const commonSelectFolder = async (
