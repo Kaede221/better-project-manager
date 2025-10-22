@@ -2,6 +2,7 @@
  * 项目项
  */
 declare interface ProjectItem {
+  id: string;
   name: string;
   path: string;
   icon?: string;

@@ -98,7 +98,7 @@ export class CommandHandlers {
    */
   async handleRenameProject(item: ProjectItem): Promise<void> {
     const projects = loadProjects(this.configFile);
-    const idx = projects.findIndex((p) => p.path === item.path);
+    const idx = projects.findIndex((p) => p.id === item.id);
     if (idx === -1) {
       return;
     }
@@ -179,6 +179,7 @@ export class CommandHandlers {
 
     const projects = loadProjects(this.configFile);
     projects.push({
+      id: new Date().getTime().toString(36),
       name: name.trim(),
       path: folderUri[0].fsPath,
       icon: iconName || undefined,
@@ -199,7 +200,7 @@ export class CommandHandlers {
       "请选择要移动到的文件夹"
     );
     // 获取这个元素的坐标
-    const idx = projects.findIndex((p) => p.path === item.path);
+    const idx = projects.findIndex((p) => p.id === item.id);
     if (idx !== -1) {
       if (folderName !== undefined) {
         projects[idx].folder = folderName;
@@ -268,7 +269,7 @@ export class CommandHandlers {
    */
   async handleDeleteProject(item: ProjectItem): Promise<void> {
     const projects = loadProjects(this.configFile);
-    const idx = projects.findIndex((p) => p.path === item.path);
+    const idx = projects.findIndex((p) => p.id === item.id);
     if (idx === -1) {
       return;
     }
@@ -307,7 +308,7 @@ export class CommandHandlers {
       this.configFile
     );
     const projects = loadProjects(this.configFile);
-    const idx = projects.findIndex((p) => p.path === item.path);
+    const idx = projects.findIndex((p) => p.id === item.id);
 
     if (idx === -1) {
       return;
@@ -324,7 +325,7 @@ export class CommandHandlers {
   async handleRemoveProjectIcon(item: ProjectItem): Promise<void> {
     // 获取所有的项目
     const projects = loadProjects(this.configFile);
-    const idx = projects.findIndex((p) => p.path === item.path);
+    const idx = projects.findIndex((p) => p.id === item.id);
     if (idx === -1) {
       return;
     }
@@ -370,9 +371,10 @@ export class CommandHandlers {
 
     let folderNameValue = undefined;
     if (addToFolder === "是") {
-      folderNameValue = await vscode.window.showInputBox({
-        prompt: "输入文件夹名称",
-      });
+      folderNameValue = await commonSelectFolder(
+        this.configFile,
+        "请选择文件夹或创建新文件夹"
+      );
     }
 
     // 询问是否设置图标
@@ -402,6 +404,7 @@ export class CommandHandlers {
 
     const projects = loadProjects(this.configFile);
     projects.push({
+      id: new Date().getTime().toString(36),
       name: name.trim(),
       path: currentFolderPath,
       icon: iconName || undefined,
