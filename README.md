@@ -2,22 +2,6 @@
 
 一个用于管理多个项目的 VS Code 扩展。通过这个扩展，你可以轻松地添加、组织和快速访问你的项目。
 
-## 🎓 使用手册
-
-安装扩展后，点击左侧活动栏中的项目管理图标以打开侧边栏。
-
-![alt text](./resources/readme-assets/image.png)
-
-基本的功能如下:
-
-![alt text](./resources/readme-assets/image-2.png)
-
-您可以右键文件夹进行重命名/删除操作, 也可以右键项目进行各种操作:
-
-![alt text](./resources/readme-assets/image-3.png)
-
-如有需要的功能, 欢迎留言!
-
 ## 🚀 功能特性
 
 - 项目管理：添加、打开、重命名和删除项目

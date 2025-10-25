@@ -105,6 +105,10 @@
       {
         "command": "project-manager.deleteFolder",
         "title": "删除文件夹"
+      },
+      {
+        "command": "project-manager.showOnboarding",
+        "title": "打开 Better Project Manager 新手引导"
       }
     ],
     "menus": {

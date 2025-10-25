@@ -4,6 +4,7 @@ import * as path from "path";
 import { CommandHandlers } from "./handlers";
 import { ProjectTreeProvider } from "./providers";
 
+import { OnboardingPanel } from "./webview/OnboardingPanel";
 import { FileWatcher } from "./utils/fileWatcher";
 
 // 记录文件监视器, 方便后端关闭的时候清理资源
@@ -11,6 +12,31 @@ let fileWatcher: FileWatcher | undefined;
 
 // 激活
 export function activate(context: vscode.ExtensionContext) {
+  // 首次安装弹窗交互式引导
+  if (!context.globalState.get("onboarding_shown")) {
+    OnboardingPanel.show(context.extensionUri);
+
+    // 监听 Webview 完成/跳过触发，只需设定状态即可
+    const onboardingDispose = vscode.workspace.onDidChangeConfiguration((e) => {
+      // 若用户配置变动可触发引导完成（备用）
+      if (e.affectsConfiguration("betterProjectManagerSidebar")) {
+        context.globalState.update("onboarding_shown", true);
+        onboardingDispose.dispose();
+      }
+    });
+    context.subscriptions.push(onboardingDispose);
+
+    // 监听面板 dispose 时保存设置
+    const origDispose = OnboardingPanel.prototype.dispose;
+    // @ts-ignore
+    OnboardingPanel.prototype.dispose = function () {
+      context.globalState.update("onboarding_shown", true);
+      if (origDispose) {
+        origDispose.apply(this);
+      }
+    };
+  }
+
   // 修改配置文件路径为 VSCode 全局存储目录
   const configFile = path.join(
     context.globalStorageUri.fsPath,
@@ -116,6 +142,11 @@ function registerCommands(
       // NOTE 保存当前文件夹作为新的项目
       command: "project-manager.saveCurrentFolderAsProject",
       handler: handlers.handleSaveCurrentFolderAsProject.bind(handlers),
+    },
+    {
+      // NOTE 唤起新手引导
+      command: "project-manager.showOnboarding",
+      handler: () => OnboardingPanel.show(context.extensionUri),
     },
   ];
 
