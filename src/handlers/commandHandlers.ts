@@ -145,12 +145,17 @@ export class CommandHandlers {
       canPickMany: false,
     });
 
-    let folderName = undefined;
+    let folderName: string | undefined = undefined;
     if (addToFolder === "是") {
-      folderName = await commonSelectFolder(
+      const res = await commonSelectFolder(
         this.configFile,
         "请选择要添加到的文件夹"
       );
+      // 用户取消选择则终止添加流程
+      if (res.cancelled) {
+        return;
+      }
+      folderName = res.folderName;
     }
 
     // 询问是否设置图标
@@ -196,17 +201,25 @@ export class CommandHandlers {
    */
   async handleMoveProjectToFolder(item: ProjectItem): Promise<void> {
     const projects = loadProjects(this.configFile);
-    const folderName = await commonSelectFolder(
+    const res = await commonSelectFolder(
       this.configFile,
       "请选择要移动到的文件夹"
     );
+
+    // 用户取消选择或输入则不做任何修改
+    if (res.cancelled) {
+      return;
+    }
+
+    const folderName = res.folderName;
+
     // 获取这个元素的坐标
     const idx = projects.findIndex((p) => p.id === item.id);
     if (idx !== -1) {
       if (folderName !== undefined) {
         projects[idx].folder = folderName;
       } else {
-        // 否则就是移动到根目录 直接删除folder字段即可
+        // 移动到根目录：删除 folder 字段
         delete projects[idx].folder;
       }
 
@@ -370,12 +383,17 @@ export class CommandHandlers {
       canPickMany: false,
     });
 
-    let folderNameValue = undefined;
+    let folderNameValue: string | undefined = undefined;
     if (addToFolder === "是") {
-      folderNameValue = await commonSelectFolder(
+      const res = await commonSelectFolder(
         this.configFile,
         "请选择文件夹或创建新文件夹"
       );
+      // 用户取消则终止保存流程
+      if (res.cancelled) {
+        return;
+      }
+      folderNameValue = res.folderName;
     }
 
     // 询问是否设置图标

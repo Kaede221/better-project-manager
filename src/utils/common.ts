@@ -60,8 +60,7 @@ export const getFolderList = (configFile: string) => {
 export const commonSelectFolder = async (
   configFile: string,
   message: string
-) => {
-  let folderName: string | undefined;
+): Promise<{ folderName: string | undefined; cancelled: boolean }> => {
   const folderList = getFolderList(configFile);
   const selectedFolder = await vscode.window.showQuickPick(
     ["新建文件夹", ...folderList, "根目录"],
@@ -70,14 +69,26 @@ export const commonSelectFolder = async (
       canPickMany: false,
     }
   );
+
+  // 用户取消了选择
+  if (!selectedFolder) {
+    return { folderName: undefined, cancelled: true };
+  }
+
   if (selectedFolder === "新建文件夹") {
-    folderName = await vscode.window.showInputBox({
+    const name = await vscode.window.showInputBox({
       prompt: "输入新文件夹名称",
     });
-  } else if (selectedFolder !== "根目录") {
-    folderName = selectedFolder;
-  } else {
-    folderName = undefined;
+    // 取消输入或未填写则视为取消整个操作
+    if (!name || !name.trim()) {
+      return { folderName: undefined, cancelled: true };
+    }
+    return { folderName: name.trim(), cancelled: false };
   }
-  return folderName;
+
+  if (selectedFolder === "根目录") {
+    return { folderName: undefined, cancelled: false };
+  }
+
+  return { folderName: selectedFolder, cancelled: false };
 };
