@@ -1,5 +1,4 @@
 import * as vscode from "vscode";
-import * as path from "path";
 
 /**
  * 新手引导 Webview 面板
