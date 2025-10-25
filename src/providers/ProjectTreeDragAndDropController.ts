@@ -89,25 +89,43 @@ export class ProjectTreeDragAndDropController
       }
       projects.splice(lastIdx, 0, draggedProject);
     } else if (targetProjectId) {
-      // 若拖到项目上，需决定 before/after/on，默认 after
-      // dropTargetLocation 由 VSCode (1.74+) 传递或主程序扩展
-      let location = dropTargetLocation || "after";
-      const targetIndex = projects.findIndex((p) => p.id === targetProjectId);
-      if (targetIndex === -1) {
+      // 拖动到“项目”上：将拖拽的项目移动到目标项目所属的文件夹下
+      // 若目标项目在根目录，则移动到根目录
+      if (targetProjectId === draggedId) {
+        // 自身不处理
+        return;
+      }
+      const targetProject = projects.find((p) => p.id === targetProjectId);
+      if (!targetProject) {
         return;
       }
 
-      // 默认放同一文件夹下，除非拖拽不同文件夹
-      // 支持跨文件夹拖动：若目标项目为文件夹项目，则 folder 置为目标项目 folder
-      draggedProject.folder = projects[targetIndex].folder;
-
-      // 先移除，然后按 before/after/on 插入
+      const targetFolder = targetProject.folder; // 可能为 undefined（根目录）
+      // 先从原位置移除
       projects = projects.filter((p) => p.id !== draggedId);
-      let insertIdx = targetIndex;
-      if (location === "after" || location === "on") {
-        insertIdx += 1;
+      // 设置新归属文件夹
+      draggedProject.folder = targetFolder;
+
+      if (targetFolder) {
+        // 插入到该文件夹末尾
+        let lastIdx = projects.length;
+        for (let i = 0; i < projects.length; ++i) {
+          if (projects[i].folder === targetFolder) {
+            lastIdx = i + 1;
+          }
+        }
+        projects.splice(lastIdx, 0, draggedProject);
+      } else {
+        // 插入到根目录末尾
+        let lastIdx = projects.length;
+        for (let i = 0; i < projects.length; ++i) {
+          if (projects[i].folder) {
+            continue;
+          }
+          lastIdx = i + 1;
+        }
+        projects.splice(lastIdx, 0, draggedProject);
       }
-      projects.splice(insertIdx, 0, draggedProject);
     }
 
     // 保存到配置文件

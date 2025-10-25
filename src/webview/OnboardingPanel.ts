@@ -28,6 +28,11 @@ export class OnboardingPanel {
       description: "在项目上右键可进行打开、重命名、设置图标等操作。",
       image: "image-3.png",
     },
+    {
+      title: "拖动项目操作",
+      description: "直接拖动项目, 进行跨文件夹移动。",
+      image: "Snipaste_2025-10-25_15-58-34.jpg",
+    },
   ];
 
   public static show(extensionUri: vscode.Uri) {

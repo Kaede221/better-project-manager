@@ -96,8 +96,11 @@ export class ProjectTreeProvider implements vscode.TreeDataProvider<TreeItem> {
 
   getChildren(element?: TreeItem): Thenable<TreeItem[]> {
     if (element && "type" in element && element.type === "folder") {
-      // 返回文件夹内的项目
-      return Promise.resolve(element.projects);
+      // 返回文件夹内的项目（按名称升序排序）
+      const sorted = [...element.projects].sort((a, b) =>
+        a.name.localeCompare(b.name)
+      );
+      return Promise.resolve(sorted);
     }
 
     // 返回顶级项目和文件夹
