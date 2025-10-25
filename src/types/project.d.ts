@@ -1,7 +1,7 @@
 /**
  * 项目项
  */
-declare interface ProjectItem {
+export interface ProjectItem {
   id: string;
   name: string;
   path: string;
@@ -12,7 +12,7 @@ declare interface ProjectItem {
 /**
  * 文件夹项
  */
-declare interface FolderItem {
+export interface FolderItem {
   name: string;
   type: "folder";
   projects: ProjectItem[];
@@ -21,4 +21,4 @@ declare interface FolderItem {
 /**
  * 树项（可以是项目或文件夹）
  */
-declare type TreeItem = ProjectItem | FolderItem;
+export type TreeItem = ProjectItem | FolderItem;

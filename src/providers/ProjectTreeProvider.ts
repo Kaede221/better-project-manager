@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { IconManager } from "../utils/iconManager";
 import { loadProjects } from "../utils/common";
+import type { TreeItem, ProjectItem, FolderItem } from "../types/project";
 
 /**
  * 项目树提供器
@@ -45,6 +46,7 @@ export class ProjectTreeProvider implements vscode.TreeDataProvider<TreeItem> {
       project.name,
       vscode.TreeItemCollapsibleState.None
     );
+    treeItem.id = project.id;
 
     // 根据配置决定是否显示项目路径
     const showPath = vscode.workspace

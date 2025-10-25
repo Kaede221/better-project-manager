@@ -3,6 +3,7 @@ import * as path from "path";
 
 import { CommandHandlers } from "./handlers";
 import { ProjectTreeProvider } from "./providers";
+import { ProjectTreeDragAndDropController } from "./providers/ProjectTreeDragAndDropController";
 
 import { OnboardingPanel } from "./webview/OnboardingPanel";
 import { FileWatcher } from "./utils/fileWatcher";
@@ -45,10 +46,16 @@ export function activate(context: vscode.ExtensionContext) {
 
   // 初始化树提供器
   const treeProvider = new ProjectTreeProvider(context, configFile);
-  vscode.window.registerTreeDataProvider(
-    "betterProjectManagerSidebar",
-    treeProvider
+  const dragAndDropController = new ProjectTreeDragAndDropController(
+    configFile,
+    () => treeProvider.refresh()
   );
+  const treeView = vscode.window.createTreeView("betterProjectManagerSidebar", {
+    treeDataProvider: treeProvider,
+    dragAndDropController,
+    showCollapseAll: true,
+  });
+  context.subscriptions.push(treeView, dragAndDropController);
 
   // 初始化命令处理器
   const commandHandlers = new CommandHandlers(
