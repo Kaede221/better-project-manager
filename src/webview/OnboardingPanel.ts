@@ -70,7 +70,7 @@ export class OnboardingPanel {
             // 完成全部，关闭面板
             this.dispose();
             vscode.commands.executeCommand(
-              "workbench.view.extension.betterProjectManagerSidebar"
+              "workbench.view.extension.projectManagerSidebar"
             );
           }
         } else if (message.command === "skip") {
@@ -107,7 +107,7 @@ export class OnboardingPanel {
       )
     );
 
-    // 列表 html
+    // todo 列表 html
     const todoList = OnboardingPanel.steps
       .map(
         (s, idx) =>
