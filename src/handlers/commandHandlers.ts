@@ -10,6 +10,13 @@ import {
 import { IconManager } from "../utils/iconManager";
 
 /**
+ * 可刷新的树数据提供器接口
+ */
+interface RefreshableTreeDataProvider<T> extends vscode.TreeDataProvider<T> {
+  refresh(): void;
+}
+
+/**
  * 命令处理器
  */
 export class CommandHandlers {
@@ -18,7 +25,7 @@ export class CommandHandlers {
   constructor(
     private context: vscode.ExtensionContext,
     private configFile: string,
-    private treeProvider: vscode.TreeDataProvider<TreeItem>
+    private treeProvider: RefreshableTreeDataProvider<TreeItem>
   ) {
     this.iconManager = new IconManager(context);
   }
@@ -45,18 +52,41 @@ export class CommandHandlers {
   }
 
   /**
+   * 检查项目路径是否存在
+   * @param projectPath 项目路径
+   * @returns 是否存在
+   */
+  private __isProjectPathValid(projectPath: string): boolean {
+    try {
+      return fs.existsSync(projectPath) && fs.statSync(projectPath).isDirectory();
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * 刷新树视图
    */
-  private __refreshTree() {
-    if (this.treeProvider && "refresh" in this.treeProvider) {
-      (this.treeProvider as any).refresh();
-    }
+  private __refreshTree(): void {
+    this.treeProvider.refresh();
   }
 
   /**
    * * 打开项目
    */
   async handleOpenProject(item: ProjectItem): Promise<void> {
+    // 检查项目路径是否有效
+    if (!this.__isProjectPathValid(item.path)) {
+      const action = await vscode.window.showErrorMessage(
+        `项目路径不存在：${item.path}`,
+        "从列表中移除"
+      );
+      if (action === "从列表中移除") {
+        await this.handleDeleteProject(item);
+      }
+      return;
+    }
+
     if (this.__isProjectAlreadyOpen(item.path)) {
       vscode.window.showInformationMessage(`已经打开项目：${item.name}`);
       return;
@@ -70,6 +100,18 @@ export class CommandHandlers {
    * * 在当前窗口打开项目
    */
   async handleOpenProjectInCurrentWindow(item: ProjectItem): Promise<void> {
+    // 检查项目路径是否有效
+    if (!this.__isProjectPathValid(item.path)) {
+      const action = await vscode.window.showErrorMessage(
+        `项目路径不存在：${item.path}`,
+        "从列表中移除"
+      );
+      if (action === "从列表中移除") {
+        await this.handleDeleteProject(item);
+      }
+      return;
+    }
+
     if (this.__isProjectAlreadyOpen(item.path)) {
       vscode.window.showInformationMessage(`已经打开项目：${item.name}`);
       return;
@@ -83,6 +125,18 @@ export class CommandHandlers {
    * * 在新窗口打开项目
    */
   async handleOpenProjectInNewWindow(item: ProjectItem): Promise<void> {
+    // 检查项目路径是否有效
+    if (!this.__isProjectPathValid(item.path)) {
+      const action = await vscode.window.showErrorMessage(
+        `项目路径不存在：${item.path}`,
+        "从列表中移除"
+      );
+      if (action === "从列表中移除") {
+        await this.handleDeleteProject(item);
+      }
+      return;
+    }
+
     if (this.__isProjectAlreadyOpen(item.path)) {
       vscode.window.showWarningMessage(
         `已经打开项目：${item.name}，由于VSCode设计问题，无法在新窗口再次打开`
@@ -276,6 +330,30 @@ export class CommandHandlers {
       saveProjects(projects, this.configFile);
       this.__refreshTree();
     }
+  }
+
+  /**
+   * * 从文件夹中移除项目（移动到根目录）
+   */
+  async handleRemoveFromFolder(item: ProjectItem): Promise<void> {
+    if (!item.folder) {
+      vscode.window.showInformationMessage(`项目 "${item.name}" 已在根目录`);
+      return;
+    }
+
+    const projects = loadProjects(this.configFile);
+    const idx = projects.findIndex((p) => p.id === item.id);
+    
+    if (idx === -1) {
+      return;
+    }
+
+    // 移除文件夹属性，将项目移动到根目录
+    delete projects[idx].folder;
+    
+    saveProjects(projects, this.configFile);
+    this.__refreshTree();
+    vscode.window.showInformationMessage(`已将项目 "${item.name}" 移动到根目录`);
   }
 
   /**

@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import type { ProjectItem, TreeItem } from "../types/project";
+import type { ProjectItem, TreeItem, FolderItem } from "../types/project";
 import { loadProjects, saveProjects } from "../utils/common";
 
 /**
@@ -18,11 +18,70 @@ export class ProjectTreeDragAndDropController
 
   constructor(private configFile: string, private onDataChange: () => void) {}
 
+  /**
+   * 查找项目在指定文件夹（或根目录）中的最后插入位置
+   * @param projects 项目列表
+   * @param folderName 文件夹名称，undefined 表示根目录
+   * @returns 插入位置索引
+   */
+  private findLastInsertIndex(
+    projects: ProjectItem[],
+    folderName: string | undefined
+  ): number {
+    let lastIdx = projects.length;
+    for (let i = 0; i < projects.length; ++i) {
+      if (folderName === undefined) {
+        // 根目录：查找没有 folder 属性的项目
+        if (!projects[i].folder) {
+          lastIdx = i + 1;
+        }
+      } else {
+        // 指定文件夹：查找属于该文件夹的项目
+        if (projects[i].folder === folderName) {
+          lastIdx = i + 1;
+        }
+      }
+    }
+    return lastIdx;
+  }
+
+  /**
+   * 将项目移动到指定文件夹
+   * @param projects 项目列表
+   * @param draggedProject 被拖拽的项目
+   * @param targetFolder 目标文件夹名称，undefined 表示根目录
+   * @returns 更新后的项目列表
+   */
+  private moveProjectToFolder(
+    projects: ProjectItem[],
+    draggedProject: ProjectItem,
+    targetFolder: string | undefined
+  ): ProjectItem[] {
+    // 设置新的文件夹归属
+    draggedProject.folder = targetFolder;
+    
+    // 从原位置移除
+    const filteredProjects = projects.filter((p) => p.id !== draggedProject.id);
+    
+    // 找到插入位置并插入
+    const insertIdx = this.findLastInsertIndex(filteredProjects, targetFolder);
+    filteredProjects.splice(insertIdx, 0, draggedProject);
+    
+    return filteredProjects;
+  }
+
+  /**
+   * 判断目标是否为文件夹
+   */
+  private isFolder(target: TreeItem): target is FolderItem {
+    return "type" in target && target.type === "folder";
+  }
+
   async handleDrop(
     target: TreeItem | undefined,
     sources: vscode.DataTransfer,
-    token: vscode.CancellationToken,
-    dropTargetLocation?: "before" | "after" | "on"
+    _token: vscode.CancellationToken,
+    _dropTargetLocation?: "before" | "after" | "on"
   ): Promise<void> {
     const data = sources.get(
       "application/vnd.code.tree.betterProjectManagerSidebar"
@@ -30,7 +89,13 @@ export class ProjectTreeDragAndDropController
     if (!data) {
       return;
     }
-    const draggedIds: string[] = JSON.parse(await data.asString());
+    
+    let draggedIds: string[];
+    try {
+      draggedIds = JSON.parse(await data.asString());
+    } catch {
+      return;
+    }
 
     // 读取现有项目
     let projects: ProjectItem[] = loadProjects(this.configFile);
@@ -40,6 +105,7 @@ export class ProjectTreeDragAndDropController
     if (!draggedId) {
       return;
     }
+    
     // 找到拖拽项目
     const draggedProject = projects.find((p) => p.id === draggedId);
     if (!draggedProject) {
@@ -47,85 +113,27 @@ export class ProjectTreeDragAndDropController
     }
 
     // 目标处理
-    let isTargetFolder = false;
-    let targetFolderName: string | undefined = undefined;
-    let targetProjectId: string | undefined = undefined;
-
-    // 兼容 target 类型
-    if (target) {
-      if ("type" in target && (target as any).type === "folder") {
-        isTargetFolder = true;
-        targetFolderName = (target as any).name;
-      } else if ("id" in target) {
-        targetProjectId = (target as ProjectItem).id;
-        // 放到目标项目的当前位置（before/after/on），需要 dropTargetLocation 判断
-      }
-    }
-
-    // 目标为文件夹，把项目移动到该文件夹
-    if (isTargetFolder) {
-      // 移动到目标文件夹（始终添加到文件夹末尾）
-      draggedProject.folder = targetFolderName;
-      projects = projects.filter((p) => p.id !== draggedId);
-      // 找出该文件夹最后一个项目插入点
-      let lastIdx = projects.length;
-      for (let i = 0; i < projects.length; ++i) {
-        if (projects[i].folder === targetFolderName) {
-          lastIdx = i + 1;
-        }
-      }
-      projects.splice(lastIdx, 0, draggedProject);
+    if (target && this.isFolder(target)) {
+      // 目标为文件夹，把项目移动到该文件夹
+      projects = this.moveProjectToFolder(projects, draggedProject, target.name);
     } else if (!target) {
-      // 拖到空白，移动到根末尾
-      draggedProject.folder = undefined;
-      projects = projects.filter((p) => p.id !== draggedId);
-      // 根项目段末尾
-      let lastIdx = projects.length;
-      for (let i = 0; i < projects.length; ++i) {
-        if (projects[i].folder) {
-          continue;
-        }
-        lastIdx = i + 1;
-      }
-      projects.splice(lastIdx, 0, draggedProject);
-    } else if (targetProjectId) {
-      // 拖动到“项目”上：将拖拽的项目移动到目标项目所属的文件夹下
-      // 若目标项目在根目录，则移动到根目录
-      if (targetProjectId === draggedId) {
+      // 拖到空白，移动到根目录
+      projects = this.moveProjectToFolder(projects, draggedProject, undefined);
+    } else if ("id" in target) {
+      // 拖动到项目上：将拖拽的项目移动到目标项目所属的文件夹下
+      const targetProject = target as ProjectItem;
+      
+      if (targetProject.id === draggedId) {
         // 自身不处理
         return;
       }
-      const targetProject = projects.find((p) => p.id === targetProjectId);
-      if (!targetProject) {
-        return;
-      }
-
-      const targetFolder = targetProject.folder; // 可能为 undefined（根目录）
-      // 先从原位置移除
-      projects = projects.filter((p) => p.id !== draggedId);
-      // 设置新归属文件夹
-      draggedProject.folder = targetFolder;
-
-      if (targetFolder) {
-        // 插入到该文件夹末尾
-        let lastIdx = projects.length;
-        for (let i = 0; i < projects.length; ++i) {
-          if (projects[i].folder === targetFolder) {
-            lastIdx = i + 1;
-          }
-        }
-        projects.splice(lastIdx, 0, draggedProject);
-      } else {
-        // 插入到根目录末尾
-        let lastIdx = projects.length;
-        for (let i = 0; i < projects.length; ++i) {
-          if (projects[i].folder) {
-            continue;
-          }
-          lastIdx = i + 1;
-        }
-        projects.splice(lastIdx, 0, draggedProject);
-      }
+      
+      // 移动到目标项目所在的文件夹
+      projects = this.moveProjectToFolder(
+        projects,
+        draggedProject,
+        targetProject.folder
+      );
     }
 
     // 保存到配置文件

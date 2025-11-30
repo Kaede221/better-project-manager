@@ -8,6 +8,7 @@ export class OnboardingPanel {
   public static currentPanel: OnboardingPanel | undefined;
   private readonly _panel: vscode.WebviewPanel;
   private readonly _extensionUri: vscode.Uri;
+  private readonly _onComplete?: () => void;
   private _disposables: vscode.Disposable[] = [];
   private _completedStep: number = 0;
 
@@ -35,7 +36,12 @@ export class OnboardingPanel {
     },
   ];
 
-  public static show(extensionUri: vscode.Uri) {
+  /**
+   * 显示新手引导面板
+   * @param extensionUri 扩展 URI
+   * @param onComplete 引导完成或跳过时的回调函数
+   */
+  public static show(extensionUri: vscode.Uri, onComplete?: () => void): void {
     if (OnboardingPanel.currentPanel) {
       OnboardingPanel.currentPanel._panel.reveal();
       return;
@@ -53,12 +59,17 @@ export class OnboardingPanel {
       }
     );
 
-    OnboardingPanel.currentPanel = new OnboardingPanel(panel, extensionUri);
+    OnboardingPanel.currentPanel = new OnboardingPanel(panel, extensionUri, onComplete);
   }
 
-  private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
+  private constructor(
+    panel: vscode.WebviewPanel,
+    extensionUri: vscode.Uri,
+    onComplete?: () => void
+  ) {
     this._panel = panel;
     this._extensionUri = extensionUri;
+    this._onComplete = onComplete;
 
     // 设置 Webview 内容
     this._panel.webview.html = this._getHtmlForWebview();
@@ -89,7 +100,12 @@ export class OnboardingPanel {
     this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
   }
 
-  public dispose() {
+  public dispose(): void {
+    // 调用完成回调
+    if (this._onComplete) {
+      this._onComplete();
+    }
+    
     OnboardingPanel.currentPanel = undefined;
     while (this._disposables.length) {
       const d = this._disposables.pop();
@@ -240,19 +256,24 @@ export class OnboardingPanel {
           </section>
         </div>
         <script>
-          document.getElementById('nextBtn').onclick = function() {
-            window.parent.postMessage({ command: 'next' }, '*');
-            // 兼容 vscode api
-            if(window.acquireVsCodeApi){
-              acquireVsCodeApi().postMessage({ command: 'next' });
+          (function() {
+            // 获取 VS Code API（只能调用一次）
+            const vscode = typeof acquireVsCodeApi === 'function' ? acquireVsCodeApi() : null;
+            
+            function sendMessage(command) {
+              if (vscode) {
+                vscode.postMessage({ command: command });
+              }
             }
-          };
-          document.getElementById('skipBtn').onclick = function() {
-            window.parent.postMessage({ command: 'skip' }, '*');
-            if(window.acquireVsCodeApi){
-              acquireVsCodeApi().postMessage({ command: 'skip' });
-            }
-          };
+            
+            document.getElementById('nextBtn').addEventListener('click', function() {
+              sendMessage('next');
+            });
+            
+            document.getElementById('skipBtn').addEventListener('click', function() {
+              sendMessage('skip');
+            });
+          })();
         </script>
       </body>
       </html>

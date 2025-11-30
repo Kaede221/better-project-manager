@@ -15,27 +15,10 @@ let fileWatcher: FileWatcher | undefined;
 export function activate(context: vscode.ExtensionContext) {
   // 首次安装弹窗交互式引导
   if (!context.globalState.get("onboarding_shown")) {
-    OnboardingPanel.show(context.extensionUri);
-
-    // 监听 Webview 完成/跳过触发，只需设定状态即可
-    const onboardingDispose = vscode.workspace.onDidChangeConfiguration((e) => {
-      // 若用户配置变动可触发引导完成（备用）
-      if (e.affectsConfiguration("betterProjectManagerSidebar")) {
-        context.globalState.update("onboarding_shown", true);
-        onboardingDispose.dispose();
-      }
-    });
-    context.subscriptions.push(onboardingDispose);
-
-    // 监听面板 dispose 时保存设置
-    const origDispose = OnboardingPanel.prototype.dispose;
-    // @ts-ignore
-    OnboardingPanel.prototype.dispose = function () {
+    // 使用回调方式处理引导完成事件，避免覆盖原型方法
+    OnboardingPanel.show(context.extensionUri, () => {
       context.globalState.update("onboarding_shown", true);
-      if (origDispose) {
-        origDispose.apply(this);
-      }
-    };
+    });
   }
 
   // 修改配置文件路径为 VSCode 全局存储目录
@@ -149,6 +132,11 @@ function registerCommands(
       // NOTE 保存当前文件夹作为新的项目
       command: "project-manager.saveCurrentFolderAsProject",
       handler: handlers.handleSaveCurrentFolderAsProject.bind(handlers),
+    },
+    {
+      // NOTE 从文件夹中移除项目
+      command: "project-manager.removeFromFolder",
+      handler: handlers.handleRemoveFromFolder.bind(handlers),
     },
     {
       // NOTE 唤起新手引导
