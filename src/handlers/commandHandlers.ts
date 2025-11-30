@@ -11,7 +11,7 @@ import {
   renameFolderConfig,
   deleteFolderConfig,
 } from "../utils/common";
-import { IconManager } from "../utils/iconManager";
+import { IconManager, ICON_FILE_FILTERS } from "../utils/iconManager";
 
 /**
  * 可刷新的树数据提供器接口
@@ -229,8 +229,8 @@ export class CommandHandlers {
         canSelectFiles: true,
         canSelectFolders: false,
         canSelectMany: false,
-        filters: { SVG: ["svg"] },
-        openLabel: "选择项目图标 (SVG)",
+        filters: ICON_FILE_FILTERS,
+        openLabel: "选择项目图标",
       });
 
       if (iconUri && iconUri.length > 0) {
@@ -350,8 +350,8 @@ export class CommandHandlers {
       canSelectFiles: true,
       canSelectFolders: false,
       canSelectMany: false,
-      filters: { SVG: ["svg"] },
-      openLabel: "选择新的文件夹图标 (SVG)",
+      filters: ICON_FILE_FILTERS,
+      openLabel: "选择新的文件夹图标",
     });
 
     if (!iconUri || iconUri.length === 0) {
@@ -456,8 +456,8 @@ export class CommandHandlers {
       canSelectFiles: true,
       canSelectFolders: false,
       canSelectMany: false,
-      filters: { SVG: ["svg"] },
-      openLabel: "选择新的项目图标 (SVG)",
+      filters: ICON_FILE_FILTERS,
+      openLabel: "选择新的项目图标",
     });
 
     if (!iconUri || iconUri.length === 0) {
@@ -556,8 +556,8 @@ export class CommandHandlers {
         canSelectFiles: true,
         canSelectFolders: false,
         canSelectMany: false,
-        filters: { SVG: ["svg"] },
-        openLabel: "选择项目图标 (SVG)",
+        filters: ICON_FILE_FILTERS,
+        openLabel: "选择项目图标",
       });
 
       if (iconUri && iconUri.length > 0) {

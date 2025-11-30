@@ -4,10 +4,48 @@ import * as path from "path";
 import * as fs from "fs";
 
 /**
+ * 支持的图标文件扩展名
+ */
+export const SUPPORTED_ICON_EXTENSIONS = ["svg", "png", "jpg", "jpeg"] as const;
+
+/**
+ * 支持的图标文件扩展名类型
+ */
+export type SupportedIconExtension = (typeof SUPPORTED_ICON_EXTENSIONS)[number];
+
+/**
+ * 图标文件过滤器，用于文件选择对话框
+ */
+export const ICON_FILE_FILTERS: { [name: string]: string[] } = {
+  "图片文件": [...SUPPORTED_ICON_EXTENSIONS],
+  "SVG": ["svg"],
+  "PNG": ["png"],
+  "JPEG": ["jpg", "jpeg"],
+};
+
+/**
  * 图标管理器
  */
 export class IconManager {
   constructor(private _context: vscode.ExtensionContext) {}
+
+  /**
+   * 检查文件是否为支持的图标格式
+   * @param filePath 文件路径
+   * @returns 是否为支持的图标格式
+   */
+  static isSupportedIconFormat(filePath: string): boolean {
+    const ext = path.extname(filePath).toLowerCase().slice(1);
+    return SUPPORTED_ICON_EXTENSIONS.includes(ext as SupportedIconExtension);
+  }
+
+  /**
+   * 获取支持的图标格式列表（用于显示）
+   * @returns 格式化的扩展名列表字符串
+   */
+  static getSupportedFormatsDisplay(): string {
+    return SUPPORTED_ICON_EXTENSIONS.map((ext) => `.${ext}`).join(", ");
+  }
 
   /**
    * 获取项目图标路径
