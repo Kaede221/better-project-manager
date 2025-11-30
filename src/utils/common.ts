@@ -1,4 +1,4 @@
-import type { ProjectItem } from "../types/project";
+import type { ProjectItem, FolderConfig, ConfigData } from "../types/project";
 import * as path from "path";
 import * as fs from "fs";
 import * as vscode from "vscode";
@@ -64,6 +64,36 @@ function isValidProjectArray(data: unknown): data is ProjectItem[] {
 }
 
 /**
+ * 验证文件夹配置数据结构
+ * @param data 待验证的数据
+ * @returns 是否为有效的文件夹配置数组
+ */
+function isValidFolderConfigArray(data: unknown): data is FolderConfig[] {
+  if (!Array.isArray(data)) {
+    return false;
+  }
+  
+  return data.every((item) => {
+    return (
+      typeof item === "object" &&
+      item !== null &&
+      typeof item.name === "string" &&
+      (item.icon === undefined || typeof item.icon === "string")
+    );
+  });
+}
+
+/**
+ * 获取文件夹配置文件路径
+ * @param configFile 项目配置文件路径
+ * @returns 文件夹配置文件路径
+ */
+function getFolderConfigFile(configFile: string): string {
+  const dir = path.dirname(configFile);
+  return path.join(dir, "folder-config.json");
+}
+
+/**
  * 保存项目列表到配置文件
  * @param projects 项目列表
  * @param configFile 配置文件路径
@@ -113,6 +143,132 @@ export const loadProjects = (configFile: string): ProjectItem[] => {
   } catch (error) {
     log(`加载项目列表失败: ${error}`, "error");
     return [];
+  }
+};
+
+/**
+ * 保存文件夹配置到配置文件
+ * @param folders 文件夹配置列表
+ * @param configFile 项目配置文件路径
+ */
+export const saveFolderConfigs = (
+  folders: FolderConfig[],
+  configFile: string
+): void => {
+  try {
+    const folderConfigFile = getFolderConfigFile(configFile);
+    const dir = path.dirname(folderConfigFile);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(folderConfigFile, JSON.stringify(folders, null, 2), "utf8");
+    log(`成功保存 ${folders.length} 个文件夹配置`);
+  } catch (error) {
+    const errorMessage = `保存文件夹配置失败: ${error}`;
+    log(errorMessage, "error");
+    vscode.window.showErrorMessage(errorMessage);
+    throw error;
+  }
+};
+
+/**
+ * 从配置文件加载文件夹配置
+ * @param configFile 项目配置文件路径
+ * @returns 文件夹配置列表
+ */
+export const loadFolderConfigs = (configFile: string): FolderConfig[] => {
+  try {
+    const folderConfigFile = getFolderConfigFile(configFile);
+    if (!fs.existsSync(folderConfigFile)) {
+      log("文件夹配置文件不存在，返回空列表");
+      return [];
+    }
+    
+    const raw = fs.readFileSync(folderConfigFile, "utf8");
+    const data: unknown = JSON.parse(raw);
+    
+    if (!isValidFolderConfigArray(data)) {
+      log("文件夹配置文件格式无效，返回空列表", "warn");
+      return [];
+    }
+    
+    log(`成功加载 ${data.length} 个文件夹配置`);
+    return data;
+  } catch (error) {
+    log(`加载文件夹配置失败: ${error}`, "error");
+    return [];
+  }
+};
+
+/**
+ * 获取文件夹配置
+ * @param folderName 文件夹名称
+ * @param configFile 项目配置文件路径
+ * @returns 文件夹配置，如果不存在则返回 undefined
+ */
+export const getFolderConfig = (
+  folderName: string,
+  configFile: string
+): FolderConfig | undefined => {
+  const folders = loadFolderConfigs(configFile);
+  return folders.find((f) => f.name === folderName);
+};
+
+/**
+ * 更新或创建文件夹配置
+ * @param folderConfig 文件夹配置
+ * @param configFile 项目配置文件路径
+ */
+export const updateFolderConfig = (
+  folderConfig: FolderConfig,
+  configFile: string
+): void => {
+  const folders = loadFolderConfigs(configFile);
+  const idx = folders.findIndex((f) => f.name === folderConfig.name);
+  
+  if (idx !== -1) {
+    folders[idx] = folderConfig;
+  } else {
+    folders.push(folderConfig);
+  }
+  
+  saveFolderConfigs(folders, configFile);
+};
+
+/**
+ * 重命名文件夹配置
+ * @param oldName 旧名称
+ * @param newName 新名称
+ * @param configFile 项目配置文件路径
+ */
+export const renameFolderConfig = (
+  oldName: string,
+  newName: string,
+  configFile: string
+): void => {
+  const folders = loadFolderConfigs(configFile);
+  const idx = folders.findIndex((f) => f.name === oldName);
+  
+  if (idx !== -1) {
+    folders[idx].name = newName;
+    saveFolderConfigs(folders, configFile);
+  }
+};
+
+/**
+ * 删除文件夹配置
+ * @param folderName 文件夹名称
+ * @param configFile 项目配置文件路径
+ */
+export const deleteFolderConfig = (
+  folderName: string,
+  configFile: string
+): void => {
+  const folders = loadFolderConfigs(configFile);
+  const filtered = folders.filter((f) => f.name !== folderName);
+  
+  if (filtered.length !== folders.length) {
+    saveFolderConfigs(filtered, configFile);
   }
 };
 

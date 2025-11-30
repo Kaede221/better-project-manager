@@ -10,11 +10,20 @@ export interface ProjectItem {
 }
 
 /**
- * 文件夹项
+ * 文件夹配置项（存储在配置文件中）
+ */
+export interface FolderConfig {
+  name: string;
+  icon?: string;
+}
+
+/**
+ * 文件夹项（用于树视图显示）
  */
 export interface FolderItem {
   name: string;
   type: "folder";
+  icon?: string;
   projects: ProjectItem[];
 }
 
@@ -22,3 +31,11 @@ export interface FolderItem {
  * 树项（可以是项目或文件夹）
  */
 export type TreeItem = ProjectItem | FolderItem;
+
+/**
+ * 完整配置数据结构
+ */
+export interface ConfigData {
+  projects: ProjectItem[];
+  folders?: FolderConfig[];
+}

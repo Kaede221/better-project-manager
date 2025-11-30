@@ -107,6 +107,14 @@
         "title": "删除文件夹"
       },
       {
+        "command": "project-manager.changeFolderIcon",
+        "title": "修改文件夹图标"
+      },
+      {
+        "command": "project-manager.removeFolderIcon",
+        "title": "重置文件夹图标"
+      },
+      {
         "command": "project-manager.showOnboarding",
         "title": "打开 Better Project Manager 新手引导"
       }
@@ -176,9 +184,19 @@
           "group": "folder-sider-group-1@1"
         },
         {
-          "command": "project-manager.deleteFolder",
+          "command": "project-manager.changeFolderIcon",
           "when": "view == betterProjectManagerSidebar && viewItem == folderItem",
           "group": "folder-sider-group-1@2"
+        },
+        {
+          "command": "project-manager.removeFolderIcon",
+          "when": "view == betterProjectManagerSidebar && viewItem == folderItem",
+          "group": "folder-sider-group-1@3"
+        },
+        {
+          "command": "project-manager.deleteFolder",
+          "when": "view == betterProjectManagerSidebar && viewItem == folderItem",
+          "group": "folder-sider-group-2@1"
         }
       ]
     },

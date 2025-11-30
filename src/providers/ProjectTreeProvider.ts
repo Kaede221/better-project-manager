@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { IconManager } from "../utils/iconManager";
-import { loadProjects } from "../utils/common";
+import { loadProjects, getFolderConfig } from "../utils/common";
 import type { TreeItem, ProjectItem, FolderItem } from "../types/project";
 
 /**
@@ -36,6 +36,27 @@ export class ProjectTreeProvider implements vscode.TreeDataProvider<TreeItem> {
         vscode.TreeItemCollapsibleState.Collapsed
       );
       treeItem.contextValue = "folderItem";
+      
+      // 设置文件夹图标
+      if (element.icon) {
+        const iconPath = this.iconManager.getFolderIconPath(
+          element.icon,
+          this.configFile
+        );
+        if (iconPath) {
+          treeItem.iconPath = {
+            light: vscode.Uri.file(iconPath),
+            dark: vscode.Uri.file(iconPath),
+          };
+        } else {
+          // 图标文件不存在，使用默认图标
+          treeItem.iconPath = new vscode.ThemeIcon("folder");
+        }
+      } else {
+        // 没有自定义图标，使用默认文件夹图标
+        treeItem.iconPath = new vscode.ThemeIcon("folder");
+      }
+      
       return treeItem;
     }
 
@@ -121,12 +142,15 @@ export class ProjectTreeProvider implements vscode.TreeDataProvider<TreeItem> {
       }
     });
 
-    // 创建文件夹项
+    // 创建文件夹项，并加载文件夹配置（包括图标）
     const folders: FolderItem[] = [];
     folderMap.forEach((folderProjects, folderName) => {
+      // 获取文件夹配置以获取图标信息
+      const folderConfig = getFolderConfig(folderName, this.configFile);
       folders.push({
         name: folderName,
         type: "folder",
+        icon: folderConfig?.icon,
         projects: folderProjects,
       });
     });

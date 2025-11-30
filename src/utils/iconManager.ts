@@ -37,6 +37,32 @@ export class IconManager {
   }
 
   /**
+   * 获取文件夹图标路径
+   * @param iconName 图标文件名
+   * @param configFile 配置文件路径
+   * @returns 图标路径，如果图标不存在则返回 undefined
+   */
+  getFolderIconPath(
+    iconName: string,
+    configFile: string
+  ): string | undefined {
+    if (!iconName) {
+      return undefined;
+    }
+
+    const globalIconPath = path.join(
+      configFile ? path.dirname(configFile) : "",
+      iconName
+    );
+    
+    try {
+      return fs.existsSync(globalIconPath) ? globalIconPath : undefined;
+    } catch {
+      return undefined;
+    }
+  }
+
+  /**
    * 生成唯一的图标文件名
    * @param baseName 原始文件名
    * @param globalDir 全局目录

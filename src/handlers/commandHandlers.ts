@@ -6,6 +6,10 @@ import {
   saveProjects,
   loadProjects,
   commonSelectFolder,
+  updateFolderConfig,
+  getFolderConfig,
+  renameFolderConfig,
+  deleteFolderConfig,
 } from "../utils/common";
 import { IconManager } from "../utils/iconManager";
 
@@ -302,6 +306,9 @@ export class CommandHandlers {
         }
       });
 
+      // 同时更新文件夹配置中的名称
+      renameFolderConfig(item.name, newName.trim(), this.configFile);
+
       saveProjects(projects, this.configFile);
       this.__refreshTree();
     }
@@ -327,9 +334,71 @@ export class CommandHandlers {
         }
       });
 
+      // 同时删除文件夹配置
+      deleteFolderConfig(item.name, this.configFile);
+
       saveProjects(projects, this.configFile);
       this.__refreshTree();
     }
+  }
+
+  /**
+   * * 修改文件夹图标
+   */
+  async handleChangeFolderIcon(item: FolderItem): Promise<void> {
+    const iconUri = await vscode.window.showOpenDialog({
+      canSelectFiles: true,
+      canSelectFolders: false,
+      canSelectMany: false,
+      filters: { SVG: ["svg"] },
+      openLabel: "选择新的文件夹图标 (SVG)",
+    });
+
+    if (!iconUri || iconUri.length === 0) {
+      return;
+    }
+
+    const iconName = this.iconManager.copyIconToGlobal(
+      iconUri[0].fsPath,
+      this.configFile
+    );
+
+    // 更新文件夹配置
+    updateFolderConfig(
+      {
+        name: item.name,
+        icon: iconName,
+      },
+      this.configFile
+    );
+
+    this.__refreshTree();
+    vscode.window.showInformationMessage(`已更新文件夹 "${item.name}" 的图标`);
+  }
+
+  /**
+   * * 重置文件夹图标
+   */
+  async handleRemoveFolderIcon(item: FolderItem): Promise<void> {
+    // 获取当前文件夹配置
+    const folderConfig = getFolderConfig(item.name, this.configFile);
+    
+    if (!folderConfig || !folderConfig.icon) {
+      vscode.window.showInformationMessage(`文件夹 "${item.name}" 没有自定义图标`);
+      return;
+    }
+
+    // 更新文件夹配置，移除图标
+    updateFolderConfig(
+      {
+        name: item.name,
+        icon: undefined,
+      },
+      this.configFile
+    );
+
+    this.__refreshTree();
+    vscode.window.showInformationMessage(`已重置文件夹 "${item.name}" 的图标`);
   }
 
   /**

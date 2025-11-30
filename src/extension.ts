@@ -129,6 +129,16 @@ function registerCommands(
       handler: handlers.handleDeleteFolder.bind(handlers),
     },
     {
+      // NOTE 修改文件夹图标
+      command: "project-manager.changeFolderIcon",
+      handler: handlers.handleChangeFolderIcon.bind(handlers),
+    },
+    {
+      // NOTE 重置文件夹图标
+      command: "project-manager.removeFolderIcon",
+      handler: handlers.handleRemoveFolderIcon.bind(handlers),
+    },
+    {
       // NOTE 保存当前文件夹作为新的项目
       command: "project-manager.saveCurrentFolderAsProject",
       handler: handlers.handleSaveCurrentFolderAsProject.bind(handlers),
